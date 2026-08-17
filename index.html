@@ -1,0 +1,2958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CheckList ✅</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: rgba(255,255,255,.90);
+    --card-solid: #ffffff;
+    --ink: #161b2b;
+    --muted: #6d7485;
+    --line: rgba(37,45,66,.13);
+    --accent: #5b5ce2;
+    --accent-soft: rgba(91,92,226,.11);
+    --danger: #dc3f4b;
+    --shadow: 0 18px 48px rgba(30,37,64,.12);
+    --day-green: rgba(32,164,100,.13);
+    --day-yellow: rgba(215,147,18,.15);
+    --day-red: rgba(220,63,75,.11);
+    --category: rgba(91,92,226,.095);
+    --footer: rgba(91,92,226,.06);
+  }
+
+  body[data-theme="dark"] {
+    --bg: #0b1020;
+    --card: rgba(17,24,39,.91);
+    --card-solid: #121a2b;
+    --ink: #edf0f8;
+    --muted: #98a2b7;
+    --line: rgba(221,228,244,.13);
+    --accent: #8c8df4;
+    --accent-soft: rgba(140,141,244,.14);
+    --danger: #ff737d;
+    --shadow: 0 18px 52px rgba(0,0,0,.40);
+    --day-green: rgba(53,197,118,.15);
+    --day-yellow: rgba(236,177,55,.16);
+    --day-red: rgba(239,91,102,.14);
+    --category: rgba(140,141,244,.13);
+    --footer: rgba(140,141,244,.08);
+  }
+
+  * { box-sizing: border-box; }
+  html { min-height: 100%; }
+  body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    padding: 22px;
+    transition: color .2s ease, background .2s ease;
+  }
+
+  .landscape-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+  }
+  .landscape-bg svg { width: 100%; height: 100%; display: block; }
+  .page-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(244,246,251,.42), rgba(240,241,249,.72));
+    backdrop-filter: blur(1px);
+  }
+  body[data-theme="dark"] .page-overlay {
+    background: linear-gradient(180deg, rgba(7,10,24,.58), rgba(9,12,28,.78));
+  }
+
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(13px);
+  }
+  .brand h1 { margin: 0; font-size: clamp(23px, 3vw, 34px); line-height: 1; }
+  .brand p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+  .main-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+  button {
+    font: inherit;
+    border: 1px solid var(--line);
+    background: var(--card-solid);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .12s ease, background .15s ease, border-color .15s ease;
+  }
+  button:hover { background: var(--accent-soft); border-color: var(--accent); }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  body[data-theme="dark"] button.primary { color: #fff; }
+  button.danger:hover { color: var(--danger); border-color: var(--danger); background: rgba(190,60,60,.09); }
+
+  #weeksContainer { display: grid; gap: 18px; }
+  .week-card {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(13px);
+    overflow: hidden;
+  }
+  .week-head {
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .week-title-wrap { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .week-title { font-size: 17px; font-weight: 800; }
+  .week-range { color: var(--muted); font-size: 12px; }
+  .week-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+  .week-actions button { padding: 6px 9px; font-size: 12px; }
+
+  .week-scroll { overflow-x: auto; padding: 13px; }
+  .table-shell { min-width: 890px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  col.meta-col { width: 300px; }
+  col.day-col { width: calc((100% - 300px) / 7); }
+  th, td { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; padding: 0; }
+  tr > :first-child { border-left: 1px solid var(--line); }
+  thead tr:first-child > * { border-top: 1px solid var(--line); }
+  thead tr:first-child > :first-child { border-top-left-radius: 12px; }
+  thead tr:first-child > :last-child { border-top-right-radius: 12px; }
+  tfoot tr:last-child > :first-child { border-bottom-left-radius: 12px; }
+  tfoot tr:last-child > :last-child { border-bottom-right-radius: 12px; }
+
+  th {
+    background: rgba(255,255,255,.50);
+    color: var(--muted);
+    padding: 8px 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  body[data-theme="dark"] th { background: rgba(10,18,22,.38); }
+  .meta-head {
+    font-size: 25px;
+    color: var(--ink);
+    text-align: center;
+    font-weight: 900;
+    letter-spacing: .2px;
+  }
+  .day-header { min-height: 63px; display: grid; align-content: center; gap: 4px; }
+  .day-name { font-size: 12px; font-weight: 900; color: var(--ink); text-transform: uppercase; letter-spacing: .5px; }
+  .date-input {
+    width: 82px;
+    max-width: calc(100% - 8px);
+    margin: 0 auto;
+    padding: 3px 4px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    text-align: center;
+    font: inherit;
+    font-size: 11px;
+  }
+  .date-input:hover, .date-input:focus { outline: none; border-color: var(--accent); background: var(--card-solid); color: var(--ink); }
+
+  .task-row.dragging, .category-row.dragging { opacity: .42; }
+  .task-row.drag-over > *, .category-row.drag-over > * { box-shadow: inset 0 3px 0 var(--accent); }
+  .meta-cell { min-height: 64px; display: flex; align-items: center; gap: 9px; padding: 8px 10px; background: rgba(255,255,255,.35); }
+  body[data-theme="dark"] .meta-cell { background: rgba(6,12,15,.18); }
+  .task-main { min-width: 0; flex: 1; padding: 1px 3px; }
+  .task-title { font-size: 13px; font-weight: 850; line-height: 1.3; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .drag-handle { cursor: grab; user-select: none; color: var(--muted); width: 26px; height: 32px; display: grid; place-items: center; flex: 0 0 26px; border-radius: 8px; font-size: 16px; transition: background .15s ease, color .15s ease; }
+  .drag-handle:hover { background: var(--accent-soft); color: var(--accent); }
+  .drag-handle:active { cursor: grabbing; }
+  .row-input, .category-input {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--ink);
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+  }
+  .row-input:focus, .category-input:focus { outline: none; border-color: var(--accent); background: var(--card-solid); }
+  .row-tools { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+  .row-tools button { border: none; background: transparent; width: 29px; height: 29px; padding: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; border-radius: 8px; }
+  .row-tools button:hover { color: var(--ink); background: var(--accent-soft); }
+  .row-tools .remove-row:hover { color: var(--danger); background: rgba(190,60,60,.10); }
+  .task-badges { margin-top: 5px; gap: 5px !important; }
+  .tiny-badge { padding: 3px 7px !important; border-radius: 999px !important; }
+
+  .category-row td.category-full-cell { padding: 0; background: var(--category); border-right: 1px solid var(--line); }
+  .category-full { min-height: 48px; display: grid; grid-template-columns: 42px minmax(0,1fr) 42px; align-items: center; padding: 4px 9px; }
+  .category-full .drag-handle { justify-self: start; }
+  .category-input { justify-self: center; width: min(420px, 72%); text-align: center; font-size: 14px; font-weight: 900; letter-spacing: .45px; text-transform: uppercase; color: var(--ink) !important; -webkit-text-fill-color:var(--ink); }
+  .category-delete { justify-self: end; width: 30px; height: 30px; min-height: 30px; padding: 0; border: none; display: grid; place-items: center; border-radius: 8px; background: transparent; color: var(--muted); }
+  .category-delete:hover { color: var(--danger); border-color: transparent; background: rgba(190,60,60,.10); }
+  .category-fill { display: none; }
+
+  .check-cell { height: 50px; }
+  .cell-btn { width: 100%; height: 50px; border: none; border-radius: 0; background: transparent; display: grid; place-items: center; padding: 0; }
+  .cell-btn:hover { background: rgba(255,255,255,.20); border-color: transparent; }
+  .box { width: 27px; height: 27px; border: 2px solid var(--line); border-radius: 7px; display: grid; place-items: center; color: #fff; font-weight: 900; }
+  .cell-btn.filled .box { background: var(--accent); border-color: var(--accent); }
+  body[data-theme="dark"] .cell-btn.filled .box { color: #10251c; }
+  .cell-btn.missed .box { background: #d84f4f; border-color: #a92f2f; color: #fff; }
+  .cell-btn.missed:hover .box { background: #c83e3e; border-color: #8f2424; }
+
+  .day-none { background: transparent; }
+  .day-green { background: var(--day-green) !important; }
+  .day-yellow { background: var(--day-yellow) !important; }
+  .day-red { background: var(--day-red) !important; }
+
+  tfoot td { background: var(--footer); padding: 9px 5px; font-size: 12px; font-weight: 900; }
+  .daily-label { text-align: center; font-size: 13px; }
+
+
+  .status { margin: 12px 4px 0; color: var(--muted); font-size: 12px; min-height: 18px; }
+
+  .analysis-panel {
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(13px);
+    overflow: hidden;
+  }
+  .analysis-panel[hidden] { display: none; }
+  .analysis-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .analysis-head h2 { margin: 0; font-size: 22px; }
+  .analysis-content { padding: 16px; display: grid; gap: 18px; }
+  .analysis-section { border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.32); padding: 14px; overflow-x: auto; }
+  body[data-theme="dark"] .analysis-section { background: rgba(5,11,14,.17); }
+  .analysis-section h3 { margin: 0 0 5px; }
+  .analysis-section .summary { color: var(--muted); margin-bottom: 11px; font-size: 13px; }
+  .analysis-table { min-width: 520px; border-collapse: collapse; }
+  .analysis-table th, .analysis-table td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; }
+  .analysis-table th { font-size: 12px; }
+  .analysis-table td:last-child, .analysis-table th:last-child { text-align: right; }
+  .monthly-summary strong { font-size: 25px; line-height: 1; color: var(--accent); vertical-align: -2px; }
+
+  .graph-panel { overflow: hidden; }
+  .graph-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0 14px; }
+  .graph-modes { display: flex; gap: 7px; flex-wrap: wrap; }
+  .graph-mode-btn { font-size: 12px; padding: 7px 10px; }
+  .graph-mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  body[data-theme="dark"] .graph-mode-btn.active { color: #10251c; }
+  .graph-scope-wrap { display: grid; gap: 4px; min-width: min(310px, 100%); }
+  .graph-scope-wrap label { color: var(--muted); font-size: 11px; font-weight: 800; }
+  .graph-select { width: 100%; border: 1px solid var(--line); border-radius: 9px; background: var(--card-solid); color: var(--ink); padding: 8px 10px; font: inherit; font-size: 13px; }
+  .graph-box { border: 1px solid var(--line); border-radius: 12px; background: var(--card-solid); padding: 10px; min-width: 680px; }
+  .line-chart { display: block; width: 100%; height: auto; min-height: 320px; }
+  .chart-grid { stroke: var(--line); stroke-width: 1; }
+  .chart-axis { stroke: var(--muted); stroke-width: 1.2; }
+  .chart-line { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+  .chart-point { fill: var(--card-solid); stroke: var(--accent); stroke-width: 3; }
+  .chart-label, .chart-y-label { fill: var(--muted); font-size: 12px; }
+  .chart-value { fill: var(--ink); font-size: 12px; font-weight: 900; }
+  .chart-empty { min-height: 260px; display: grid; place-items: center; color: var(--muted); text-align: center; }
+
+  .month-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .month-card { border: 1px solid var(--line); border-radius: 13px; padding: 12px; background: var(--card-solid); }
+  .month-card h4 { margin: 0 0 4px; text-transform: capitalize; }
+  .month-total { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .calendar .dow { font-size: 10px; color: var(--muted); text-align: center; font-weight: 800; padding: 3px 0; }
+  .calendar-day { min-height: 47px; border: 1px solid var(--line); border-radius: 7px; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; }
+  .calendar-day.empty { visibility: hidden; }
+  .calendar-day strong { font-size: 12px; }
+  .calendar-day small { color: var(--muted); font-size: 9px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 9px; color: var(--muted); font-size: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--line); display: inline-block; }
+
+  .empty-state { padding: 34px 18px; text-align: center; color: var(--muted); }
+
+  @media (max-width: 720px) {
+    body { padding: 10px; }
+    .topbar { align-items: flex-start; padding: 14px; }
+    .main-actions { justify-content: flex-start; }
+    .brand { width: 100%; }
+    .week-head { align-items: flex-start; }
+  }
+
+  @media print {
+    .landscape-bg, .page-overlay, .topbar, #weeksContainer, .status, .analysis-head button { display: none !important; }
+    body { background: #fff; color: #000; padding: 0; }
+    .analysis-panel { display: block !important; box-shadow: none; border: none; margin: 0; }
+    .analysis-section, .month-card { break-inside: avoid; background: #fff; }
+  }
+  .hidden { display: none !important; }
+  .toolbar-group { display:flex; gap:7px; flex-wrap:wrap; align-items:center; }
+  .search-input, .select-input, .number-input, .text-input, textarea {
+    border:1px solid var(--line); background:var(--card-solid); color:var(--ink);
+    border-radius:9px; padding:8px 10px; font:inherit;
+  }
+  .search-input { min-width:210px; }
+  .today-panel, .period-card {
+    border:1px solid var(--line); background:var(--card); border-radius:20px;
+    box-shadow:var(--shadow); backdrop-filter:blur(13px); margin-bottom:18px; overflow:hidden;
+  }
+  .today-panel { position: relative; background: radial-gradient(circle at 96% -20%, rgba(91,92,226,.16), transparent 28rem), var(--card); }
+  body[data-theme="dark"] .today-panel { background: radial-gradient(circle at 96% -20%, rgba(140,141,244,.15), transparent 28rem), var(--card); }
+  .today-panel::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent); }
+  .today-head, .period-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:16px 18px; border-bottom:1px solid var(--line); }
+  .today-head b { font-size:32px !important; letter-spacing:-.04em; }
+  .today-body { padding:17px 18px 19px; display:grid; gap:16px; }
+  .today-stats { display:flex; gap:8px; flex-wrap:wrap; }
+  .metric-chip { padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:var(--card-solid); font-size:11px; font-weight:800; }
+  .today-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
+  .today-task { min-height:66px; display:grid; grid-template-columns:minmax(170px,1fr) auto; gap:12px; align-items:center; border:1px solid var(--line); border-radius:15px; padding:11px 12px 11px 15px; background:var(--card-solid); transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease; }
+  .today-task:hover { transform:translateY(-1px); border-color:rgba(91,92,226,.35); box-shadow:0 8px 20px rgba(30,37,64,.08); }
+  .today-task-title { font-size:13px; font-weight:900; line-height:1.3; }
+  .today-task-meta { color:var(--muted); font-size:10px; line-height:1.4; margin-top:4px; }
+  .today-state-btn { width:46px; height:46px; flex:0 0 46px; padding:0; display:grid; place-items:center; border:2px solid var(--line); border-radius:11px; background:transparent; color:var(--muted); font-size:18px; font-weight:900; line-height:1; }
+  .today-state-btn:hover { border-color:var(--accent); background:var(--accent-soft); }
+  .today-state-btn.filled { background:var(--accent); border-color:var(--accent); color:#fff; }
+  body[data-theme="dark"] .today-state-btn.filled { color:#fff; }
+  .today-state-btn.missed { background:#d84f4f; border-color:#a92f2f; color:#fff; }
+  .today-state-btn.missed:hover { background:#c83e3e; border-color:#8f2424; }
+  .today-state-btn.excused { background:#7b55c7; border-color:#5d36a7; color:#fff; }
+  .today-state-btn.excused:hover { background:#6d47bb; border-color:#5d36a7; }
+  .today-note { width:100%; min-height:96px; resize:vertical; line-height:1.5; }
+  .paused-cell { color:var(--muted); font-weight:900; font-size:18px; }
+  .cell-btn.excused .box { background:#7b55c7; border-color:#5d36a7; color:#fff; }
+  .cell-btn.excused:hover .box { background:#6d47bb; }
+  .cell-stack { display:grid; place-items:center; gap:2px; }
+  .sub-progress { font-size:9px; color:var(--muted); line-height:1; }
+  .task-badges { display:flex; gap:4px; flex-wrap:wrap; }
+  .tiny-badge { font-size:9px; border:1px solid var(--line); border-radius:999px; padding:2px 5px; color:var(--muted); background:var(--card-solid); }
+  .week-card.collapsed .week-scroll { padding:10px 13px 13px; }
+  .collapsed-table .status-square { width:25px; height:25px; border-radius:7px; display:grid; place-items:center; margin:auto; color:white; font-weight:900; }
+  .status-good { background:#36a861; }
+  .status-bad { background:#d84f4f; }
+  .status-neutral { background:#7b55c7; }
+  .status-none { background:#879198; }
+  .auto-green { background:var(--day-green)!important; }
+  .auto-red { background:var(--day-red)!important; }
+  .auto-purple { background:rgba(123,85,199,.18)!important; }
+  .periods-wrap { display:grid; gap:12px; margin-bottom:18px; }
+  .period-body { padding:12px; overflow-x:auto; }
+  .period-mini-table { min-width:720px; }
+  .period-mini-table th, .period-mini-table td { padding:8px 6px; }
+  .analysis-selector-row { display:flex; gap:9px; flex-wrap:wrap; align-items:end; margin:9px 0 13px; }
+  .analysis-selector-row label { display:grid; gap:4px; color:var(--muted); font-size:11px; font-weight:800; }
+  .analysis-subtitle { color:var(--muted); font-size:12px; margin:4px 0 9px; }
+  .analysis-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:9px; margin:10px 0 12px; }
+  .analysis-card { border:1px solid var(--line); border-radius:11px; padding:10px; background:var(--card-solid); }
+  .analysis-card b { display:block; font-size:20px; margin-top:4px; }
+  .analysis-table .category-analysis-row td { background:var(--category); font-weight:900; }
+  .percent-over { color:#198754; font-weight:900; }
+  .trend-list { display:grid; gap:6px; margin-top:8px; }
+  .trend-row { display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid var(--line); padding-top:6px; font-size:12px; }
+  .trend-positive { color:#198754; font-weight:900; }
+  .trend-negative { color:var(--danger); font-weight:900; }
+  .trend-neutral { color:var(--muted); font-weight:800; }
+  .comparison-note { color:var(--muted); font-size:11px; margin-top:7px; }
+  .calendar-symbols { font-size:12px; font-weight:900; min-height:17px; }
+  .calendar-day.current-record { outline:2px solid var(--accent); }
+  .modal-backdrop, .pin-gate {
+    position:fixed; inset:0; z-index:1000; background:rgba(5,12,16,.72); display:grid; place-items:center; padding:18px;
+  }
+  .modal { width:min(720px,100%); max-height:90vh; overflow:auto; background:var(--card-solid); color:var(--ink); border:1px solid var(--line); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,.45); }
+  .modal.small { width:min(430px,100%); }
+  .modal-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); }
+  .modal-head h2 { margin:0; font-size:20px; }
+  .modal-body { padding:16px; display:grid; gap:13px; }
+  .modal-actions { padding:13px 16px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
+  .form-field { display:grid; gap:5px; }
+  .form-field label { font-size:11px; color:var(--muted); font-weight:800; }
+  .trash-item { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; padding:10px; border:1px solid var(--line); border-radius:10px; }
+  .trash-item small { color:var(--muted); }
+  .pin-logo { font-size:52px; text-align:center; }
+  .pin-input { width:100%; text-align:center; letter-spacing:10px; font-size:23px; font-weight:900; }
+  .pin-gate-field { display:grid; gap:6px; }
+  .pin-gate-label { color:var(--muted); font-size:inherit; font-weight:400; line-height:1.45; text-align:center; }
+  .pin-gate-import { display:grid; gap:9px; margin-top:1px; }
+  .pin-gate-or { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+  .pin-gate-or::before, .pin-gate-or::after { content:""; height:1px; background:var(--line); flex:1; }
+  .pin-error { color:var(--danger); min-height:18px; font-size:12px; text-align:center; }
+  .pin-change-close { display:flex; justify-content:flex-end; margin-bottom:-4px; }
+  .pin-change-title { text-align:center; display:grid; gap:6px; }
+  .pin-change-title h2 { margin:0; font-size:25px; }
+  .pin-change-title p { margin:0; color:var(--muted); font-size:12px; line-height:1.45; }
+  .pin-change-fields { display:grid; gap:10px; }
+  .pin-change-field { display:grid; gap:5px; }
+  .pin-change-field label { text-align:center; color:var(--muted); font-size:11px; font-weight:800; }
+  .pin-change-hint { color:var(--muted); text-align:center; font-size:10px; line-height:1.4; }
+  .shortcut-help { display:grid; grid-template-columns:auto 1fr; gap:7px 12px; font-size:13px; }
+  .shortcut-help kbd { border:1px solid var(--line); border-bottom-width:3px; border-radius:6px; background:var(--card); padding:2px 7px; font-family:inherit; font-weight:800; }
+  .note-history-item { border:1px solid var(--line); border-radius:10px; padding:10px; }
+  .note-history-item pre { white-space:pre-wrap; margin:6px 0 0; font-family:inherit; }
+  .week-hidden-by-period { display:none; }
+  @media(max-width:720px){ .search-input{min-width:100%;} .today-list{grid-template-columns:1fr;} .today-task{grid-template-columns:1fr auto;} }
+
+
+  /* ===== v9 TESTE: organização por áreas ===== */
+  .v9-shell { display:grid; gap:16px; }
+  .v9-header {
+    border:1px solid var(--line); background:var(--card); border-radius:20px; box-shadow:var(--shadow);
+    backdrop-filter:blur(13px); padding:17px 18px 12px; display:grid; gap:14px;
+  }
+  .v9-header-top { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .v9-brand h1 { margin:0; font-size:clamp(24px,3vw,34px); letter-spacing:-.7px; }
+  .v9-brand p { margin:6px 0 0; color:var(--muted); font-size:12px; }
+  .v9-quick { display:flex; gap:7px; flex-wrap:wrap; }
+  .v9-nav { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; padding-top:12px; border-top:1px solid var(--line); }
+  .v9-nav-btn {
+    min-height:50px; display:flex; align-items:center; justify-content:center; gap:7px; padding:9px 10px;
+    font-weight:850; background:transparent; color:var(--muted); border-color:var(--line);
+  }
+  .v9-nav-btn:hover { border-color:var(--line); color:var(--ink); }
+  .v9-nav-btn.active { background:var(--accent-soft); color:var(--accent); border-color:color-mix(in srgb,var(--accent) 42%,transparent); }
+  .v9-nav-icon { font-size:18px; }
+  .v9-area { display:grid; gap:16px; }
+  .v9-area-head {
+    display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:2px 4px 0;
+  }
+  .v9-area-title { margin:0; font-size:27px; letter-spacing:-.5px; }
+  .v9-area-copy { margin:5px 0 0; color:var(--muted); font-size:12px; max-width:720px; line-height:1.45; }
+  .v9-area-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .v9-planning-toolbar {
+    border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:var(--shadow);
+    padding:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  }
+  .v9-planning-toolbar .search-input { flex:1 1 280px; }
+  .v9-hub-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
+  .v9-hub-card {
+    border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:var(--shadow);
+    padding:17px; display:grid; gap:10px; min-height:165px; align-content:space-between;
+  }
+  .v9-hub-card .hub-icon { font-size:28px; }
+  .v9-hub-card h3 { margin:0; font-size:17px; }
+  .v9-hub-card p { margin:5px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
+  .v9-hub-stat { font-size:28px; font-weight:900; color:var(--accent); }
+  .v9-settings-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(220px,290px));
+    gap:24px 28px;
+    justify-content:center;
+    align-items:stretch;
+    padding:10px 0 6px;
+  }
+  .v9-setting-card {
+    border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:var(--shadow); padding:19px;
+    display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start;
+  }
+  .v9-setting-card .setting-icon { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:var(--accent-soft); font-size:20px; }
+  .v9-setting-card h3 { margin:1px 0 4px; font-size:15px; }
+  .v9-setting-card p { margin:0 0 10px; color:var(--muted); font-size:11px; line-height:1.45; }
+  .v9-analysis-wrap #analysisPanel { margin-top:0; }
+  .v9-analysis-menu { display:grid; gap:13px; }
+  .v9-analysis-choice {
+    border:1px solid var(--line); border-radius:16px; background:var(--card); color:var(--ink);
+    padding:15px 16px; display:flex; align-items:center; gap:12px; text-align:left; min-height:82px;
+    box-shadow:0 8px 22px rgba(65,45,110,.07);
+  }
+  .v9-analysis-choice:hover { border-color:color-mix(in srgb,var(--accent) 48%,var(--line)); transform:translateY(-1px); }
+  .v9-analysis-choice.active { background:var(--accent-soft); border-color:var(--accent); }
+  .v9-analysis-choice-main { width:100%; min-height:94px; padding:18px 20px; }
+  .v9-analysis-choice-icon { width:43px; height:43px; flex:0 0 43px; border-radius:13px; display:grid; place-items:center; background:var(--accent-soft); font-size:21px; }
+  .v9-analysis-choice.active .v9-analysis-choice-icon { background:var(--accent); color:white; }
+  .v9-analysis-choice strong { display:block; font-size:14px; margin-bottom:4px; }
+  .v9-analysis-choice-main strong { font-size:17px; }
+  .v9-analysis-choice small { display:block; color:var(--muted); font-size:11px; line-height:1.4; }
+  .v9-analysis-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+  .v9-analysis-options .v9-analysis-choice { display:grid; grid-template-columns:auto 1fr; align-content:center; min-height:96px; }
+  .v9-analysis-display { margin-top:2px; }
+  .v9-analysis-display > .analysis-section,
+  .v9-analysis-display > div > .analysis-section { margin-top:0; }
+  .v9-status { margin-top:-8px; }
+  body[data-theme="dark"] .v9-nav-btn.active { border-color:rgba(180,150,255,.25); }
+  @media(max-width:980px){
+    .v9-settings-grid { grid-template-columns:repeat(2,minmax(220px,320px)); }
+    .v9-analysis-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media(max-width:820px){
+    .v9-nav { grid-template-columns:repeat(5,1fr); overflow-x:auto; }
+    .v9-nav-btn { min-width:112px; font-size:11px; }
+    .v9-nav-btn .v9-nav-label { white-space:nowrap; }
+  }
+  @media(max-width:560px){
+    .v9-header { padding:14px 12px 10px; }
+    .v9-header-top { align-items:flex-start; }
+    .v9-quick { width:100%; }
+    .v9-quick button { flex:1; }
+    .v9-area-title { font-size:23px; }
+    .v9-settings-grid { grid-template-columns:minmax(0,1fr); gap:16px; }
+    .v9-analysis-options { grid-template-columns:minmax(0,1fr); }
+  }
+
+
+  /* ===== v9.2 refinamentos de organização e legibilidade ===== */
+  body { font-size: 16.5px; }
+  .v9-area-head {
+    align-items:center;
+    padding:15px 18px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(9px);
+  }
+  .v9-joined-panel {
+    border:1px solid var(--line);
+    border-radius:20px;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(13px);
+    overflow:hidden;
+  }
+  .v9-joined-panel > .v9-area-head {
+    border:0;
+    border-bottom:1px solid var(--line);
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    backdrop-filter:none;
+    padding:16px 18px;
+  }
+  .v9-joined-panel > .today-panel,
+  .v9-joined-panel > .analysis-panel {
+    margin:0;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  .v9-joined-panel > .v9-planning-toolbar {
+    margin:0;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    padding:14px 18px 16px;
+    background:transparent;
+  }
+  .v9-history-joined-body { padding:16px 18px 18px; }
+  .v9-history-joined-body .v9-hub-grid { margin:0; }
+  .v9-analysis-joined > .analysis-panel { background:transparent; }
+  .v9-analysis-joined > .analysis-panel > .analysis-content { padding:16px 18px 18px; }
+  .v9-area-title { font-size:29px; }
+  .v9-area-copy { font-size:13px; }
+  .week-title { font-size:18px; }
+  .week-range { font-size:13px; }
+  .week-actions button { font-size:13px; }
+  th { font-size:13px; }
+  .day-name { font-size:13px; }
+  .date-input { font-size:12px; }
+  .task-title { font-size:15px; }
+  .tiny-badge { font-size:11px !important; }
+  .category-input { font-size:15px; }
+  .daily-label, tfoot td { font-size:13px; }
+  .today-task-title { font-size:15px; }
+  .today-task-meta { font-size:12px; }
+  .today-body label { font-size:13px !important; }
+  .metric-chip { font-size:13px; }
+  .today-note { font-size:14px; }
+
+  .v9-settings-grid {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:stretch;
+    gap:24px 30px;
+    width:100%;
+    max-width:600px;
+    margin:0 auto;
+    padding:12px 0 8px;
+  }
+  .v9-setting-card {
+    flex:0 0 285px;
+    width:285px;
+    height:205px;
+    min-height:205px;
+    padding:20px;
+  }
+  .v9-setting-card h3 { font-size:16px; }
+  .v9-setting-card p { font-size:12px; }
+
+  .v9-analysis-options { grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+  .v9-analysis-options .v9-analysis-choice { min-height:106px; }
+  .v9-analysis-display { display:grid; gap:16px; margin-top:4px; }
+  .v9-analysis-open-section { display:grid; gap:10px; }
+  .v9-analysis-empty {
+    border:1px dashed var(--line); border-radius:14px; background:var(--card);
+    padding:24px; color:var(--muted); text-align:center; font-size:13px;
+  }
+  .analysis-section .summary { font-size:14px; }
+  .analysis-table th { font-size:13px; }
+  .analysis-table td { font-size:13px; }
+  .analysis-subtitle { font-size:13px; }
+
+  @media(max-width:1180px){ .v9-analysis-options { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media(max-width:820px){ .v9-analysis-options { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:640px){
+    body { font-size:16px; }
+    .v9-setting-card { flex:1 1 100%; width:100%; height:auto; min-height:0; }
+    .v9-analysis-options { grid-template-columns:minmax(0,1fr); }
+  }
+
+
+  /* ===== v9.4: refinamentos da página Hoje e Configurações ===== */
+  .v9-today-area { gap:0; }
+  .v9-today-area .today-panel { margin-bottom:0; }
+  .v9-today-area .today-head {
+    padding:22px 24px;
+    gap:18px 24px;
+  }
+  .today-head-copy {
+    display:grid;
+    gap:7px;
+    min-width:min(100%, 310px);
+  }
+  .today-head-copy b {
+    font-size:32px !important;
+    line-height:1.05;
+    letter-spacing:-.04em;
+  }
+  .today-head-copy span {
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+    max-width:560px;
+  }
+  .v9-today-area .today-body {
+    padding:22px 24px 25px;
+    gap:24px;
+  }
+  .v9-today-area .today-stats { gap:10px; }
+  .v9-today-area .today-list { gap:14px; row-gap:16px; }
+  .v9-today-area .today-task { padding:14px 14px 14px 17px; min-height:72px; }
+  .v9-today-area .today-note { margin-top:7px; }
+
+  .v9-setting-card {
+    align-items:stretch;
+  }
+  .v9-setting-card > div:last-child {
+    height:100%;
+    min-width:0;
+    display:grid;
+    grid-template-rows:28px minmax(64px,1fr) 40px;
+    gap:8px;
+    align-items:start;
+  }
+  .v9-setting-card h3 {
+    margin:0;
+    display:flex;
+    align-items:center;
+    min-height:28px;
+  }
+  .v9-setting-card p {
+    margin:0;
+    align-self:start;
+  }
+  .v9-setting-card button {
+    width:100%;
+    height:40px;
+    align-self:end;
+    justify-self:stretch;
+  }
+  @media(max-width:640px){
+    .v9-today-area .today-head,
+    .v9-today-area .today-body { padding-left:18px; padding-right:18px; }
+    .v9-setting-card > div:last-child { grid-template-rows:auto auto 40px; }
+  }
+
+
+  /* ===== v10.0: ajustes de organização ===== */
+  .v9-settings-grid {
+    max-width:540px;
+    gap:20px 24px;
+  }
+  .v9-setting-card {
+    flex:0 0 250px;
+    width:250px;
+    height:182px;
+    min-height:182px;
+    padding:17px 17px 66px;
+  }
+  .v9-setting-card .setting-icon { width:38px; height:38px; font-size:18px; }
+  .v9-setting-card > div:last-child { grid-template-rows:26px minmax(52px,1fr) 38px; gap:6px; }
+  .v9-setting-card h3 { font-size:15px; min-height:26px; }
+  .v9-setting-card p { font-size:11.5px; line-height:1.4; }
+  .v9-setting-card button { bottom:16px; min-width:158px; height:38px; }
+  @media(max-width:640px){
+    .v9-settings-grid { max-width:100%; }
+    .v9-setting-card { flex:1 1 100%; width:100%; height:auto; min-height:170px; }
+  }
+
+  /* ===== v10.0: consolidação visual e microinterações ===== */
+  .v9-setting-card {
+    position:relative;
+    padding-bottom:72px;
+  }
+  .v9-setting-card button {
+    position:absolute;
+    left:50%;
+    bottom:20px;
+    transform:translateX(-50%);
+    width:auto;
+    min-width:170px;
+    max-width:calc(100% - 40px);
+    padding-left:18px;
+    padding-right:18px;
+  }
+  .app-version-badge {
+    position:fixed;
+    right:12px;
+    bottom:10px;
+    z-index:15;
+    padding:5px 9px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:color-mix(in srgb,var(--card-solid) 82%,transparent);
+    color:var(--muted);
+    box-shadow:0 5px 16px rgba(25,20,45,.07);
+    backdrop-filter:blur(8px);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.02em;
+    pointer-events:none;
+    opacity:.78;
+  }
+  @keyframes v10AreaIn {
+    from { opacity:.25; transform:translateY(5px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .v10-area-enter { animation:v10AreaIn .18s ease-out both; }
+  @keyframes v10Mark {
+    0% { transform:scale(.86); }
+    62% { transform:scale(1.06); }
+    100% { transform:scale(1); }
+  }
+  .cell-btn.just-marked,
+  .today-state-btn.just-marked { animation:v10Mark .20s ease-out; }
+  .cell-btn,
+  .today-state-btn,
+  .v9-nav-btn,
+  .v9-analysis-choice { transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .16s ease,box-shadow .16s ease; }
+  .cell-btn:active,
+  .today-state-btn:active { transform:scale(.94); }
+  @media (prefers-reduced-motion: reduce) {
+    .v10-area-enter,
+    .cell-btn.just-marked,
+    .today-state-btn.just-marked { animation:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+
+
+  /* ===== v10.0: ajustes finais desta revisão ===== */
+  .v9-settings-grid { max-width:540px; gap:20px 24px; }
+  .v9-setting-card {
+    flex:0 0 250px; width:250px; height:182px; min-height:182px;
+    padding:17px 17px 64px;
+  }
+  .v9-setting-card .setting-icon { width:38px; height:38px; font-size:18px; }
+  .v9-setting-card > div:last-child { grid-template-rows:26px minmax(50px,1fr) 38px; gap:6px; }
+  .v9-setting-card h3 { font-size:15px; min-height:26px; }
+  .v9-setting-card p { font-size:11.5px; line-height:1.4; }
+  .v9-setting-card button { bottom:15px; min-width:156px; height:38px; }
+  @media(max-width:640px){
+    .v9-settings-grid { max-width:100%; }
+    .v9-setting-card { flex:1 1 100%; width:100%; height:auto; min-height:168px; }
+  }
+
+</style>
+</head>
+<body data-theme="light">
+<div class="landscape-bg" aria-hidden="true">
+  <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ed4e5"/><stop offset=".55" stop-color="#d9edf0"/><stop offset="1" stop-color="#8bb6a3"/></linearGradient>
+      <linearGradient id="mountain1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#557c72"/><stop offset="1" stop-color="#294c46"/></linearGradient>
+      <linearGradient id="mountain2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#71958a"/><stop offset="1" stop-color="#3e655b"/></linearGradient>
+      <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6ffff"/><stop offset=".45" stop-color="#bce7ed"/><stop offset="1" stop-color="#6fa7af"/></linearGradient>
+      <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#899091"/><stop offset="1" stop-color="#4f585b"/></linearGradient>
+      <filter id="soft"><feGaussianBlur stdDeviation="8"/></filter>
+    </defs>
+    <rect width="1600" height="1000" fill="url(#sky)"/>
+    <ellipse cx="1210" cy="160" rx="190" ry="55" fill="#fff" opacity=".34" filter="url(#soft)"/>
+    <path d="M0 510 L250 250 L430 430 L650 165 L870 460 L1040 280 L1230 475 L1450 240 L1600 390 L1600 720 L0 720 Z" fill="url(#mountain2)" opacity=".82"/>
+    <path d="M0 610 L250 405 L415 530 L600 310 L760 560 L930 390 L1110 565 L1320 360 L1600 570 L1600 820 L0 820 Z" fill="url(#mountain1)"/>
+    <path d="M755 330 C735 470 748 520 710 635 C690 700 704 760 800 802 C896 756 908 696 886 628 C850 520 863 455 840 330 Z" fill="url(#water)" opacity=".95"/>
+    <path d="M782 350 C775 480 785 555 758 645 C744 692 752 733 800 760 C849 734 856 692 843 643 C820 553 829 475 817 350 Z" fill="#ffffff" opacity=".62"/>
+    <ellipse cx="800" cy="786" rx="225" ry="55" fill="#c9f1ef" opacity=".55"/>
+    <path d="M0 720 C220 650 360 760 520 718 C685 675 760 792 945 728 C1110 670 1330 760 1600 690 L1600 1000 L0 1000 Z" fill="#244d42"/>
+    <path d="M0 790 C255 720 405 840 620 780 C790 730 940 840 1130 780 C1300 728 1430 820 1600 765 L1600 1000 L0 1000 Z" fill="#163a32" opacity=".78"/>
+    <path d="M555 930 C590 795 690 760 825 790 C965 820 1065 865 1084 1000 L485 1000 C493 970 518 949 555 930 Z" fill="url(#rock)"/>
+    <path d="M618 900 C720 844 865 858 984 927" fill="none" stroke="#b6bcba" stroke-width="9" opacity=".28"/>
+    <g fill="#32644e" opacity=".92"><circle cx="220" cy="725" r="80"/><circle cx="325" cy="745" r="95"/><circle cx="1260" cy="720" r="100"/><circle cx="1395" cy="755" r="110"/></g>
+  </svg>
+</div>
+<div class="page-overlay"></div>
+
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "checklist-diario-local:v10.0";
+  const VERSION = 10;
+  const APP_VERSION = "10.5";
+  const SCHEMA_MODE = "checklist-v10";
+  const WEEKDAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const MONTH_NAMES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  const STATUS_ORDER = ["none", "done", "missed", "excused"];
+  const MAX_HISTORY = 60;
+
+  let state;
+  let unlocked = false;
+  let gateMode = "unlock";
+  let gateError = "";
+  let saveTimer = null;
+  let dragged = null;
+  let undoStack = [];
+  let redoStack = [];
+  let activeArea = "today";
+  let openAnalysisViews = new Set(["general"]);
+  let lastMarkedCell = "";
+  let animateArea = false;
+
+  function uid(prefix) {
+    return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizeName(value) {
+    return String(value || "").trim().toLocaleLowerCase("pt-BR").replace(/\s+/g, " ");
+  }
+
+  function isoFromDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function dateFromISO(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function addDays(iso, amount) {
+    const date = dateFromISO(iso);
+    date.setDate(date.getDate() + amount);
+    return isoFromDate(date);
+  }
+
+  function diffDays(fromISO, toISO) {
+    return Math.round((dateFromISO(toISO) - dateFromISO(fromISO)) / 86400000);
+  }
+
+  function formatDateShort(iso) {
+    const d = dateFromISO(iso);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getFullYear()).slice(-2)}`;
+  }
+
+  function formatDateLong(iso) {
+    const d = dateFromISO(iso);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  }
+
+  function parseShortDate(value) {
+    const match = String(value).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);
+    if (!match) return null;
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    let year = Number(match[3]);
+    if (year < 100) year += 2000;
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+    return isoFromDate(date);
+  }
+
+  function monthKey(iso) {
+    return String(iso).slice(0, 7);
+  }
+
+  function yearKey(iso) {
+    return String(dateFromISO(iso).getFullYear());
+  }
+
+  function decadeKey(iso) {
+    const year = dateFromISO(iso).getFullYear();
+    return String(Math.floor(year / 10) * 10);
+  }
+
+  function formatMonthKey(key) {
+    const [year, month] = key.split("-").map(Number);
+    return `${MONTH_NAMES[month - 1][0].toUpperCase()}${MONTH_NAMES[month - 1].slice(1)} de ${year}`;
+  }
+
+  function hashPin(pin) {
+    let h = 2166136261;
+    for (let i = 0; i < pin.length; i++) {
+      h ^= pin.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return `p6_${(h >>> 0).toString(16).padStart(8, "0")}`;
+  }
+
+  function validPin(pin) {
+    return /^\d{6}$/.test(String(pin || ""));
+  }
+
+  function makeDefaultDefinitions(startISO) {
+    const catRoutine = uid("cat");
+    const catGrowth = uid("cat");
+    const water = uid("task");
+    const exercise = uid("task");
+    const study = uid("task");
+    const sleep = uid("task");
+    return {
+      categories: {
+        [catRoutine]: { id: catRoutine, lineageId: catRoutine, title: "Rotina" },
+        [catGrowth]: { id: catGrowth, lineageId: catGrowth, title: "Desenvolvimento" }
+      },
+      tasks: {
+        [water]: { id: water, lineageId: water, title: "Beber água", categoryId: "", goal: { type: "daily", value: 1 }, anchorDate: startISO },
+        [exercise]: { id: exercise, lineageId: exercise, title: "Exercício", categoryId: "", goal: { type: "weekly", value: 3 }, anchorDate: startISO },
+        [study]: { id: study, lineageId: study, title: "Estudar", categoryId: "", goal: { type: "daily", value: 1 }, anchorDate: startISO },
+        [sleep]: { id: sleep, lineageId: sleep, title: "Dormir cedo", categoryId: "", goal: { type: "daily", value: 1 }, anchorDate: startISO }
+      },
+      rows: [
+        { id: uid("row"), type: "category", refId: catRoutine },
+        { id: uid("row"), type: "task", refId: water },
+        { id: uid("row"), type: "task", refId: exercise },
+        { id: uid("row"), type: "category", refId: catGrowth },
+        { id: uid("row"), type: "task", refId: study },
+        { id: uid("row"), type: "task", refId: sleep }
+      ]
+    };
+  }
+
+  function makeWeek(startISO, rows) {
+    return {
+      id: uid("week"),
+      rows: clone(rows || []),
+      days: Array.from({ length: 7 }, (_, index) => ({ date: addDays(startISO, index) })),
+      marks: {},
+      pausedTasks: {},
+      collapsed: false
+    };
+  }
+
+  function defaultState() {
+    const today = isoFromDate(new Date());
+    const defs = makeDefaultDefinitions(today);
+    return {
+      version: VERSION,
+      schemaMode: SCHEMA_MODE,
+      theme: "light",
+      security: { pinHash: "" },
+      categories: defs.categories,
+      tasks: defs.tasks,
+      weeks: [makeWeek(today, defs.rows)],
+      trash: [],
+      today: { date: today, notes: "", collapsed: false },
+      noteHistory: [],
+      ui: {
+        analysisWeekId: "",
+        analysisMonthKey: "",
+        calendarMonthKey: today.slice(0, 7),
+        graph: { mode: "weekDays", scope: "", targetType: "all", targetId: "", compareType: "week", compareA: "", compareB: "" },
+        search: "",
+        modal: "",
+        modalData: {},
+        collapsedMonths: {},
+        collapsedYears: {}
+      }
+    };
+  }
+
+  function normalizeState(candidate) {
+    if (!candidate || candidate.version !== VERSION || candidate.schemaMode !== SCHEMA_MODE || !candidate.tasks || !candidate.categories) {
+      return defaultState();
+    }
+    const s = clone(candidate);
+    s.version = VERSION;
+    s.schemaMode = SCHEMA_MODE;
+    s.theme = s.theme === "dark" ? "dark" : "light";
+    s.security = { pinHash: String(s.security?.pinHash || "") };
+    s.categories = s.categories && typeof s.categories === "object" ? s.categories : {};
+    s.tasks = s.tasks && typeof s.tasks === "object" ? s.tasks : {};
+    Object.values(s.categories).forEach(category => {
+      category.id = category.id || uid("cat");
+      category.lineageId = category.lineageId || category.id;
+      category.title = String(category.title || "Categoria");
+    });
+    Object.values(s.tasks).forEach(task => {
+      task.id = task.id || uid("task");
+      task.lineageId = task.lineageId || task.id;
+      task.title = String(task.title || "Nova meta");
+      task.categoryId = "";
+      const type = ["daily", "weekly", "monthly", "interval"].includes(task.goal?.type) ? task.goal.type : "daily";
+      task.goal = { type, value: Math.max(1, Number(task.goal?.value) || 1) };
+      task.anchorDate = task.anchorDate || isoFromDate(new Date());
+    });
+    s.weeks = Array.isArray(s.weeks) ? s.weeks.map((week, index) => {
+      const start = week.days?.[0]?.date || addDays(isoFromDate(new Date()), index * 7);
+      const normalized = {
+        id: week.id || uid("week"),
+        rows: Array.isArray(week.rows) ? week.rows.filter(row => row && (row.type === "task" || row.type === "category")).map(row => ({
+          id: row.id || uid("row"), type: row.type, refId: row.refId
+        })).filter(row => row.type === "task" ? !!s.tasks[row.refId] : !!s.categories[row.refId]) : [],
+        days: Array.from({ length: 7 }, (_, dayIndex) => ({ date: week.days?.[dayIndex]?.date || addDays(start, dayIndex) })),
+        marks: {},
+        pausedTasks: week.pausedTasks && typeof week.pausedTasks === "object" ? week.pausedTasks : {},
+        collapsed: !!week.collapsed
+      };
+      Object.entries(week.marks || {}).forEach(([key, value]) => {
+        if (["done", "missed", "excused"].includes(value)) normalized.marks[key] = value;
+      });
+      return normalized;
+    }) : [];
+    if (!s.weeks.length) {
+      const defs = makeDefaultDefinitions(isoFromDate(new Date()));
+      s.categories = defs.categories;
+      s.tasks = defs.tasks;
+      s.weeks = [makeWeek(isoFromDate(new Date()), defs.rows)];
+    }
+    s.trash = Array.isArray(s.trash) ? s.trash : [];
+    s.today = { date: s.today?.date || isoFromDate(new Date()), notes: String(s.today?.notes || ""), collapsed: !!s.today?.collapsed };
+    s.noteHistory = Array.isArray(s.noteHistory) ? s.noteHistory.map(note => ({
+      ...note, id: note.id || uid("note"), date: note.date || s.today.date, text: String(note.text || "")
+    })) : [];
+    s.ui = {
+      analysisWeekId: String(s.ui?.analysisWeekId || ""),
+      analysisMonthKey: String(s.ui?.analysisMonthKey || ""),
+      calendarMonthKey: String(s.ui?.calendarMonthKey || monthKey(s.today.date)),
+      graph: {
+        mode: ["weekDays", "monthWeeks", "yearMonths", "decadeYears", "comparePeriods"].includes(s.ui?.graph?.mode) ? s.ui.graph.mode : "weekDays",
+        scope: String(s.ui?.graph?.scope || ""),
+        targetType: ["all", "task", "category"].includes(s.ui?.graph?.targetType) ? s.ui.graph.targetType : "all",
+        targetId: String(s.ui?.graph?.targetId || ""),
+        compareType: ["week", "month", "year", "decade"].includes(s.ui?.graph?.compareType) ? s.ui.graph.compareType : "week",
+        compareA: String(s.ui?.graph?.compareA || ""), compareB: String(s.ui?.graph?.compareB || "")
+      },
+      search: String(s.ui?.search || ""), modal: String(s.ui?.modal || ""), modalData: s.ui?.modalData && typeof s.ui.modalData === "object" ? s.ui.modalData : {},
+      collapsedMonths: s.ui?.collapsedMonths && typeof s.ui.collapsedMonths === "object" ? s.ui.collapsedMonths : {},
+      collapsedYears: s.ui?.collapsedYears && typeof s.ui.collapsedYears === "object" ? s.ui.collapsedYears : {}
+    };
+    return s;
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? normalizeState(JSON.parse(raw)) : defaultState();
+    } catch (error) {
+      console.error(error);
+      state = defaultState();
+    }
+    applyTheme();
+    gateMode = state.security.pinHash ? "unlock" : "create";
+    renderGate();
+  }
+
+  function saveNow() {
+    try {
+      const persist = clone(state);
+      persist.ui.modal = "";
+      persist.ui.modalData = {};
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
+      setStatus("Salvo ✓ neste navegador e neste computador");
+    } catch (error) {
+      console.error(error);
+      setStatus("Não foi possível salvar os dados.");
+    }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    setStatus("Salvando...");
+    saveTimer = setTimeout(saveNow, 160);
+  }
+
+  function setStatus(text) {
+    const el = document.getElementById("status");
+    if (el) el.textContent = text;
+  }
+
+  function applyTheme() {
+    document.body.dataset.theme = state.theme;
+  }
+
+  function snapshotState() {
+    const snap = clone(state);
+    snap.ui.modal = "";
+    snap.ui.modalData = {};
+    return snap;
+  }
+
+  function mutate(mutator, options = {}) {
+    undoStack.push(snapshotState());
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack = [];
+    mutator();
+    state = normalizeState(state);
+    applyTheme();
+    if (options.render !== false) render();
+    scheduleSave();
+  }
+
+  function undo() {
+    if (!undoStack.length) return;
+    redoStack.push(snapshotState());
+    state = normalizeState(undoStack.pop());
+    applyTheme();
+    render();
+    scheduleSave();
+  }
+
+  function redo() {
+    if (!redoStack.length) return;
+    undoStack.push(snapshotState());
+    state = normalizeState(redoStack.pop());
+    applyTheme();
+    render();
+    scheduleSave();
+  }
+
+  function renderGate() {
+    const creating = gateMode === "create";
+    document.getElementById("app").innerHTML = `
+      <div class="pin-gate">
+        <section class="modal small">
+          <div class="modal-body">
+            <div class="pin-logo">🧠</div>
+            <div style="text-align:center">
+              <h1 style="margin:0 0 7px">CheckList ✅</h1>
+              <p style="color:var(--muted);margin:0">${creating ? "Crie um PIN numérico de 6 dígitos para proteger esta base local." : "Digite o PIN desta base para acessar seus dados."}</p>
+            </div>
+            <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••">
+            ${creating ? `<div class="pin-gate-field"><label class="pin-gate-label" for="pinConfirmInput">Repita o PIN</label><input id="pinConfirmInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"></div>` : ""}
+            <div class="pin-error">${escapeHTML(gateError)}</div>
+            <button class="primary" id="pinSubmitBtn">${creating ? "Criar PIN e entrar" : "Desbloquear"}</button>
+            ${creating ? `<div class="pin-gate-import"><div class="pin-gate-or">ou</div><button class="primary" id="gateImportBtn">Importar backup existente</button><input id="gateImportInput" type="file" accept="application/json,.json" hidden></div>` : ""}
+            <small style="color:var(--muted);text-align:center">Este é um bloqueio básico local. Não substitui criptografia forte do arquivo ou do computador.</small>
+          </div>
+        </section>
+      </div><div class="app-version-badge" aria-label="Versão do aplicativo">v${APP_VERSION}</div>`;
+    const input = document.getElementById("pinInput");
+    input?.focus();
+    const submit = () => {
+      const pin = input.value;
+      if (!validPin(pin)) {
+        gateError = "O PIN deve ter exatamente 6 números.";
+        renderGate();
+        return;
+      }
+      if (creating) {
+        const confirmPin = document.getElementById("pinConfirmInput")?.value || "";
+        if (pin !== confirmPin) {
+          gateError = "Os dois PINs são diferentes.";
+          renderGate();
+          return;
+        }
+        state.security.pinHash = hashPin(pin);
+        saveNow();
+      } else if (hashPin(pin) !== state.security.pinHash) {
+        gateError = "PIN incorreto.";
+        renderGate();
+        return;
+      }
+      gateError = "";
+      unlocked = true;
+      render();
+    };
+    document.getElementById("pinSubmitBtn")?.addEventListener("click", submit);
+    document.getElementById("gateImportBtn")?.addEventListener("click", () => document.getElementById("gateImportInput")?.click());
+    document.getElementById("gateImportInput")?.addEventListener("change", event => importBackupFile(event.target.files?.[0], { fromGate: true }));
+    document.querySelectorAll(".pin-input").forEach(el => el.addEventListener("keydown", event => {
+      if (event.key === "Enter") submit();
+    }));
+  }
+
+  function getWeek(weekId) {
+    return state.weeks.find(week => week.id === weekId);
+  }
+
+  function getTask(taskId) {
+    return state.tasks[taskId];
+  }
+
+  function getCategory(categoryId) {
+    return state.categories[categoryId];
+  }
+
+
+  function taskRows(week) {
+    return week.rows.filter(row => row.type === "task" && state.tasks[row.refId]);
+  }
+
+  function uniqueTaskIdsInWeek(week) {
+    return [...new Set(taskRows(week).map(row => row.refId))];
+  }
+
+  function markKey(taskId, dayIndex) {
+    return `${taskId}|${dayIndex}`;
+  }
+
+
+  function statusOf(week, taskId, dayIndex) {
+    const value = week.marks[markKey(taskId, dayIndex)];
+    return ["done", "missed", "excused"].includes(value) ? value : "none";
+  }
+
+  function taskIsPaused(week, taskId) {
+    return !!week.pausedTasks?.[taskId];
+  }
+
+  function taskIsScheduled(task, iso) {
+    if (!task) return false;
+    if (task.goal.type === "interval") {
+      const delta = diffDays(task.anchorDate, iso);
+      return delta >= 0 && delta % Math.max(1, task.goal.value) === 0;
+    }
+    return true;
+  }
+
+  function goalLabel(task) {
+    if (!task) return "Sem meta";
+    if (task.goal.type === "daily") return "Todos os dias";
+    if (task.goal.type === "weekly") return `${task.goal.value}x por semana`;
+    if (task.goal.type === "monthly") return `${task.goal.value}x por mês`;
+    return `A cada ${task.goal.value} ${task.goal.value === 1 ? "dia" : "dias"}`;
+  }
+
+  function weekContainingTask(taskId) {
+    return state.weeks.find(week => week.rows.some(row => row.type === "task" && row.refId === taskId)) || null;
+  }
+
+  function weekContainingCategory(categoryId) {
+    return state.weeks.find(week => week.rows.some(row => row.type === "category" && row.refId === categoryId)) || null;
+  }
+
+  function categoryForTaskInWeek(week, taskId) {
+    if (!week) return null;
+    let current = null;
+    for (const row of week.rows) {
+      if (row.type === "category") current = getCategory(row.refId) || null;
+      else if (row.type === "task" && row.refId === taskId) return current;
+    }
+    return null;
+  }
+
+
+  function taskNameKey(task) { return normalizeName(task?.title || ""); }
+  function categoryNameKey(category) { return normalizeName(category?.title || ""); }
+
+  function syncTaskNameBackward(taskId, title) {
+    const week = weekContainingTask(taskId);
+    const task = getTask(taskId);
+    if (!week || !task) return;
+    const limit = state.weeks.indexOf(week);
+    const lineageId = task.lineageId || task.id;
+    state.weeks.forEach((item, index) => {
+      if (index > limit) return;
+      item.rows.forEach(row => {
+        if (row.type !== "task") return;
+        const candidate = getTask(row.refId);
+        if (candidate && (candidate.lineageId || candidate.id) === lineageId) candidate.title = String(title || "Nova meta");
+      });
+    });
+  }
+
+  function syncCategoryNameBackward(categoryId, title) {
+    const week = weekContainingCategory(categoryId);
+    const category = getCategory(categoryId);
+    if (!week || !category) return;
+    const limit = state.weeks.indexOf(week);
+    const lineageId = category.lineageId || category.id;
+    state.weeks.forEach((item, index) => {
+      if (index > limit) return;
+      item.rows.forEach(row => {
+        if (row.type !== "category") return;
+        const candidate = getCategory(row.refId);
+        if (candidate && (candidate.lineageId || candidate.id) === lineageId) candidate.title = String(title || "Categoria");
+      });
+    });
+  }
+
+  function weekForDate(iso) {
+    const matches = state.weeks.filter(week => week.days.some(day => day.date === iso));
+    return matches[matches.length - 1] || null;
+  }
+
+  function dayIndexForDate(week, iso) { return week ? week.days.findIndex(day => day.date === iso) : -1; }
+
+  function allEntries() {
+    const entries = [];
+    state.weeks.forEach((week, weekIndex) => week.days.forEach((day, dayIndex) => entries.push({ week, weekIndex, dayIndex, date: day.date })));
+    return entries.sort((a, b) => a.date.localeCompare(b.date) || a.weekIndex - b.weekIndex);
+  }
+
+  function uniqueEntriesByDate(entries = allEntries()) {
+    const map = new Map(); entries.forEach(entry => map.set(entry.date, entry));
+    return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  function taskOccurrences(entries, taskKey = "", targetType = "all", targetId = "") {
+    const result = [];
+    entries.forEach(entry => {
+      if (entry.date > state.today.date) return;
+      uniqueTaskIdsInWeek(entry.week).forEach(taskId => {
+        const task = getTask(taskId);
+        if (!task || (taskKey && taskNameKey(task) !== taskKey)) return;
+        const category = categoryForTaskInWeek(entry.week, taskId);
+        if (targetType === "task" && taskNameKey(task) !== targetId) return;
+        if (targetType === "category" && categoryNameKey(category) !== targetId) return;
+        if (taskIsPaused(entry.week, taskId) || !taskIsScheduled(task, entry.date)) return;
+        result.push({ ...entry, taskId, task, category });
+      });
+    });
+    return result;
+  }
+
+  function filteredTaskIds(entries, targetType = "all", targetId = "") {
+    const map = new Map();
+    taskOccurrences(entries, "", targetType, targetId).forEach(item => {
+      const key = taskNameKey(item.task);
+      if (key && !map.has(key)) map.set(key, item.task.title);
+    });
+    return [...map.keys()];
+  }
+
+  function targetForOccurrences(occurrences, kind) {
+    const eligible = occurrences.filter(item => statusOf(item.week, item.taskId, item.dayIndex) !== "excused");
+    if (!eligible.length) return 0;
+    if (kind === "day") return eligible.length;
+    let target = 0;
+    const direct = eligible.filter(item => item.task.goal.type === "daily" || item.task.goal.type === "interval");
+    target += direct.length;
+    const weeklyGroups = new Map();
+    eligible.filter(item => item.task.goal.type === "weekly").forEach(item => {
+      const key = `${item.week.id}|${item.taskId}`;
+      if (!weeklyGroups.has(key)) weeklyGroups.set(key, { value: item.task.goal.value, count: 0 });
+      weeklyGroups.get(key).count += 1;
+    });
+    weeklyGroups.forEach(group => { target += Math.min(group.value, group.count); });
+    const monthlyGroups = new Map();
+    eligible.filter(item => item.task.goal.type === "monthly").forEach(item => {
+      const key = monthKey(item.date);
+      const current = monthlyGroups.get(key) || { value: 0, count: 0, latestDate: "" };
+      current.count += 1;
+      if (!current.latestDate || item.date >= current.latestDate) { current.value = item.task.goal.value; current.latestDate = item.date; }
+      monthlyGroups.set(key, current);
+    });
+    monthlyGroups.forEach(group => { target += Math.min(group.value, group.count); });
+    return target;
+  }
+
+  function taskPeriodStats(taskId, entries, kind, targetType = "all", targetId = "") {
+    const taskKey = String(taskId || "");
+    const occurrences = taskOccurrences(entries, taskKey, targetType, targetId);
+    if (!occurrences.length) return null;
+    const done = occurrences.reduce((sum, item) => sum + (statusOf(item.week, item.taskId, item.dayIndex) === "done" ? 1 : 0), 0);
+    const excused = occurrences.reduce((sum, item) => sum + (statusOf(item.week, item.taskId, item.dayIndex) === "excused" ? 1 : 0), 0);
+    const missed = occurrences.reduce((sum, item) => sum + (statusOf(item.week, item.taskId, item.dayIndex) === "missed" ? 1 : 0), 0);
+    const target = targetForOccurrences(occurrences, kind);
+    const rawPercent = target ? done / target * 100 : 0;
+    const percent = target ? Math.min(100, Math.round(rawPercent)) : 0;
+    const goals = [...new Set(occurrences.map(item => goalLabel(item.task)))];
+    return {
+      taskId: taskKey, title: occurrences[occurrences.length - 1].task.title,
+      goal: goals.length === 1 ? goals[0] : goals.join(" → "), done, target, excused, missed, percent,
+      percentLabel: done > target && target > 0 ? "+100%" : `${percent}%`, activeEntries: occurrences
+    };
+  }
+
+  function aggregateStats(entries, kind, targetType = "all", targetId = "") {
+    const tasks = filteredTaskIds(entries, targetType, targetId).map(key => taskPeriodStats(key, entries, kind, targetType, targetId)).filter(Boolean);
+    const done = tasks.reduce((sum, item) => sum + item.done, 0);
+    const target = tasks.reduce((sum, item) => sum + item.target, 0);
+    const excused = tasks.reduce((sum, item) => sum + item.excused, 0);
+    const missed = tasks.reduce((sum, item) => sum + item.missed, 0);
+    const raw = target ? done / target * 100 : 0;
+    return { tasks, done, target, excused, missed, percent: target ? Math.min(100, Math.round(raw)) : 0,
+      percentLabel: done > target && target > 0 ? "+100%" : `${target ? Math.min(100, Math.round(raw)) : 0}%` };
+  }
+
+  function taskStreakStats(taskId, entries = uniqueEntriesByDate()) {
+    const taskKey = String(taskId || "");
+    const all = taskOccurrences(uniqueEntriesByDate(), taskKey).sort((a, b) => a.date.localeCompare(b.date));
+    let run = 0, longest = 0;
+    all.forEach(item => {
+      const status = statusOf(item.week, item.taskId, item.dayIndex);
+      if (status === "done") run += 1;
+      else if (status !== "excused") run = 0;
+      longest = Math.max(longest, run);
+    });
+    let current = 0;
+    for (let i = all.length - 1; i >= 0; i--) {
+      const status = statusOf(all[i].week, all[i].taskId, all[i].dayIndex);
+      if (status === "done") current += 1;
+      else if (status === "excused") continue;
+      else break;
+    }
+    return { current, longest };
+  }
+
+  function categoryStreakStats(categoryId, entries = uniqueEntriesByDate()) {
+    const categoryKey = String(categoryId || "");
+    const sorted = uniqueEntriesByDate().filter(entry => entry.date <= state.today.date);
+
+    function completionFor(entry) {
+      const taskIds = uniqueTaskIdsInWeek(entry.week).filter(taskId => {
+        const task = getTask(taskId);
+        const category = categoryForTaskInWeek(entry.week, taskId);
+        if (!task || categoryNameKey(category) !== categoryKey || taskIsPaused(entry.week, taskId) || !taskIsScheduled(task, entry.date)) return false;
+        // Metas diárias/intervaladas têm expectativa explícita no dia. Metas semanais/mensais
+        // entram no streak do dia quando receberam uma marcação nesse dia.
+        if (task.goal.type === "daily" || task.goal.type === "interval") return true;
+        return statusOf(entry.week, taskId, entry.dayIndex) !== "none";
+      });
+      if (!taskIds.length) return null;
+      const relevant = taskIds.filter(taskId => statusOf(entry.week, taskId, entry.dayIndex) !== "excused");
+      if (!relevant.length) return true;
+      return relevant.every(taskId => statusOf(entry.week, taskId, entry.dayIndex) === "done");
+    }
+
+    let run = 0, longest = 0;
+    sorted.forEach(entry => {
+      const complete = completionFor(entry);
+      if (complete === null) return;
+      run = complete ? run + 1 : 0;
+      longest = Math.max(longest, run);
+    });
+
+    let current = 0;
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      const complete = completionFor(sorted[i]);
+      if (complete === null) continue;
+      if (complete) current += 1;
+      else break;
+    }
+    return { current, longest };
+  }
+
+  function daySummary(entry) {
+    if (!entry) return { scheduled: 0, possible: 0, done: 0, excused: 0, failures: 0, percent: 0, complete: false, symbol: "—", future: false };
+    if (entry.date > state.today.date) return { scheduled: 0, possible: 0, done: 0, excused: 0, failures: 0, percent: 0, complete: false, symbol: "—", future: true };
+    const taskIds = uniqueTaskIdsInWeek(entry.week).filter(taskId => {
+      if (taskIsPaused(entry.week, taskId)) return false;
+      const task = getTask(taskId); if (!taskIsScheduled(task, entry.date)) return false;
+      if (task.goal.type === "daily" || task.goal.type === "interval") return true;
+      return statusOf(entry.week, taskId, entry.dayIndex) !== "none";
+    });
+    if (!taskIds.length) return { scheduled: 0, possible: 0, done: 0, excused: 0, failures: 0, percent: 0, complete: false, symbol: "—", future: false };
+    let done = 0, excused = 0, failures = 0;
+    taskIds.forEach(taskId => {
+      const status = statusOf(entry.week, taskId, entry.dayIndex);
+      if (status === "done") done += 1;
+      else if (status === "excused") excused += 1;
+      else failures += 1;
+    });
+    const possible = taskIds.length - excused;
+    const complete = failures === 0;
+    const percent = possible ? Math.round(done / possible * 100) : 100;
+    return { scheduled: taskIds.length, possible, done, excused, failures, percent, complete, symbol: complete ? "✓" : "✕", future: false };
+  }
+
+  function autoPercentClass(percent, scheduled = true) {
+    if (!scheduled) return "day-none";
+    if (percent >= 100) return "day-green";
+    if (percent > 50) return "day-yellow";
+    return "day-red";
+  }
+
+  function autoDayClass(week, dayIndex) {
+    const day = week?.days?.[dayIndex];
+    if (!day) return "day-none";
+    const summary = daySummary({ week, weekIndex: state.weeks.indexOf(week), dayIndex, date: day.date });
+    return autoPercentClass(summary.percent, !!summary.scheduled);
+  }
+
+  function perfectStreaks() {
+    const entries = uniqueEntriesByDate().filter(entry => entry.date <= state.today.date);
+    let current = 0, longest = 0, currentSegment = [], longestSegment = [];
+    entries.forEach(entry => {
+      const summary = daySummary(entry); if (!summary.scheduled) return;
+      if (summary.complete) { current += 1; currentSegment.push(entry.date); }
+      else { current = 0; currentSegment = []; }
+      if (current > longest) { longest = current; longestSegment = [...currentSegment]; }
+    });
+    let currentCount = 0, currentDates = [];
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const summary = daySummary(entries[i]); if (!summary.scheduled) continue;
+      if (summary.complete) { currentCount += 1; currentDates.unshift(entries[i].date); }
+      else break;
+    }
+    return { current: currentCount, longest, currentDates, recordDates: longestSegment };
+  }
+
+  function categoryStats(entries, kind) {
+    const map = new Map();
+    entries.forEach(entry => uniqueTaskIdsInWeek(entry.week).forEach(taskId => {
+      const category = categoryForTaskInWeek(entry.week, taskId);
+      const key = categoryNameKey(category);
+      if (!map.has(key)) map.set(key, category?.title || "Sem categoria");
+    }));
+    return [...map.entries()].map(([key, title]) => {
+      const aggregate = aggregateStats(entries, kind, "category", key);
+      if (!aggregate.tasks.length) return null;
+      return { category: { id: key, title }, ...aggregate, streak: categoryStreakStats(key) };
+    }).filter(Boolean);
+  }
+
+  function currentWeekId() {
+    const byToday = weekForDate(state.today.date);
+    return byToday?.id || state.weeks[state.weeks.length - 1]?.id || "";
+  }
+
+  function availableMonthKeys() {
+    return [...new Set(allEntries().map(entry => monthKey(entry.date)))].sort();
+  }
+
+  function currentAnalysisWeekId() {
+    const ids = state.weeks.map(week => week.id);
+    if (!ids.includes(state.ui.analysisWeekId)) state.ui.analysisWeekId = currentWeekId();
+    return state.ui.analysisWeekId;
+  }
+
+  function availableAnalysisYears() {
+    const years = [...new Set(allEntries().map(entry => yearKey(entry.date)))];
+    const todayYear = yearKey(state.today.date);
+    if (!years.includes(todayYear)) years.push(todayYear);
+    return years.sort();
+  }
+
+  function currentAnalysisMonthKey() {
+    const fallback = monthKey(state.today.date);
+    const value = String(state.ui.analysisMonthKey || "");
+    if (!/^\d{4}-\d{2}$/.test(value)) state.ui.analysisMonthKey = fallback;
+    return state.ui.analysisMonthKey;
+  }
+
+  function currentCalendarMonthKey() {
+    const fallback = monthKey(state.today.date);
+    const value = String(state.ui.calendarMonthKey || "");
+    if (!/^\d{4}-\d{2}$/.test(value)) state.ui.calendarMonthKey = fallback;
+    return state.ui.calendarMonthKey;
+  }
+
+  function entriesForWeek(weekId) {
+    const week = getWeek(weekId);
+    return week ? week.days.map((day, dayIndex) => ({ week, weekIndex: state.weeks.indexOf(week), dayIndex, date: day.date })) : [];
+  }
+
+  function entriesForMonth(key) {
+    return allEntries().filter(entry => monthKey(entry.date) === key);
+  }
+
+  function entriesForYear(year) {
+    return allEntries().filter(entry => yearKey(entry.date) === String(year));
+  }
+
+  function entriesForDecade(decade) {
+    return allEntries().filter(entry => decadeKey(entry.date) === String(decade));
+  }
+
+  function setCellStatus(week, taskId, dayIndex, status) {
+    const key = markKey(taskId, dayIndex);
+    if (status === "none") delete week.marks[key];
+    else week.marks[key] = status;
+  }
+
+  function cycleCell(weekId, taskId, dayIndex) {
+    const week = getWeek(weekId);
+    if (!week || taskIsPaused(week, taskId) || !taskIsScheduled(getTask(taskId), week.days[dayIndex]?.date)) return;
+    lastMarkedCell = `${weekId}|${taskId}|${dayIndex}`;
+    mutate(() => {
+      const current = statusOf(week, taskId, dayIndex);
+      const next = STATUS_ORDER[(STATUS_ORDER.indexOf(current) + 1) % STATUS_ORDER.length];
+      setCellStatus(week, taskId, dayIndex, next);
+    });
+    setTimeout(() => { lastMarkedCell = ""; }, 260);
+  }
+
+
+  function addTask(weekId) {
+    const week = getWeek(weekId); if (!week) return;
+    mutate(() => {
+      const taskId = uid("task");
+      state.tasks[taskId] = { id: taskId, lineageId: taskId, title: "Nova meta", categoryId: "", goal: { type: "daily", value: 1 }, anchorDate: week.days[0].date };
+      week.rows.push({ id: uid("row"), type: "task", refId: taskId });
+      state.ui.modal = "taskEditor"; state.ui.modalData = { taskId, weekId };
+    });
+  }
+  function addCategory(weekId) {
+    const week = getWeek(weekId); if (!week) return;
+    mutate(() => {
+      const categoryId = uid("cat");
+      state.categories[categoryId] = { id: categoryId, lineageId: categoryId, title: "Nova categoria" };
+      week.rows.push({ id: uid("row"), type: "category", refId: categoryId });
+    });
+  }
+  function renameCategory(categoryId, title) {
+    if (!getCategory(categoryId)) return;
+    mutate(() => syncCategoryNameBackward(categoryId, String(title || "Categoria")));
+  }
+
+
+  function deleteTask(taskId) {
+    const task = getTask(taskId);
+    if (!task || !confirm(`Mover a atividade “${task.title}” e todo o histórico dela para a lixeira?`)) return;
+    mutate(() => {
+      const snapshot = { task: clone(task), placements: [], weekData: [] };
+      state.weeks.forEach(week => {
+        week.rows.forEach((row, index) => {
+          if (row.type === "task" && row.refId === taskId) snapshot.placements.push({ weekId: week.id, row: clone(row), index });
+        });
+        const marks = {};
+        Object.entries(week.marks).forEach(([key, value]) => { if (key.startsWith(`${taskId}|`)) marks[key] = value; });
+        snapshot.weekData.push({ weekId: week.id, marks, paused: !!week.pausedTasks[taskId] });
+        week.rows = week.rows.filter(row => !(row.type === "task" && row.refId === taskId));
+        Object.keys(week.marks).forEach(key => { if (key.startsWith(`${taskId}|`)) delete week.marks[key]; });
+        delete week.pausedTasks[taskId];
+      });
+      delete state.tasks[taskId];
+      state.trash.unshift({ id: uid("trash"), type: "task", title: task.title, deletedAt: new Date().toISOString(), data: snapshot });
+    });
+  }
+
+  function deleteCategory(categoryId) {
+    const category = getCategory(categoryId);
+    if (!category || !confirm(`Mover a categoria “${category.title}” para a lixeira? As atividades abaixo passarão a pertencer à categoria anterior, se houver.`)) return;
+    mutate(() => {
+      const placements = [];
+      state.weeks.forEach(week => {
+        week.rows.forEach((row, index) => { if (row.type === "category" && row.refId === categoryId) placements.push({ weekId: week.id, row: clone(row), index }); });
+        week.rows = week.rows.filter(row => !(row.type === "category" && row.refId === categoryId));
+      });
+      delete state.categories[categoryId];
+      state.trash.unshift({ id: uid("trash"), type: "category", title: category.title, deletedAt: new Date().toISOString(), data: { category: clone(category), placements, taskAssignments: [] } });
+    });
+  }
+  function removeWeek(weekId) {
+    if (state.weeks.length === 1) { alert("É necessário manter pelo menos uma semana."); return; }
+    const week = getWeek(weekId);
+    if (!week || !confirm("Mover esta semana e todas as marcações dela para a lixeira?")) return;
+    mutate(() => {
+      const index = state.weeks.indexOf(week);
+      state.weeks.splice(index, 1);
+      state.trash.unshift({ id: uid("trash"), type: "week", title: `Semana ${formatDateShort(week.days[0].date)}`, deletedAt: new Date().toISOString(), data: { week: clone(week), index } });
+    });
+  }
+
+  function restoreTrash(trashId) {
+    const item = state.trash.find(entry => entry.id === trashId);
+    if (!item) return;
+    mutate(() => {
+      if (item.type === "week") {
+        const index = Math.min(item.data.index, state.weeks.length);
+        state.weeks.splice(index, 0, item.data.week);
+      } else if (item.type === "task") {
+        const snapshot = item.data;
+        state.tasks[snapshot.task.id] = snapshot.task;
+        snapshot.placements.forEach(place => {
+          const week = getWeek(place.weekId);
+          if (week && !week.rows.some(row => row.type === "task" && row.refId === snapshot.task.id)) {
+            week.rows.splice(Math.min(place.index, week.rows.length), 0, place.row);
+          }
+        });
+        snapshot.weekData.forEach(data => {
+          const week = getWeek(data.weekId);
+          if (!week) return;
+          Object.assign(week.marks, data.marks);
+          if (data.paused) week.pausedTasks[snapshot.task.id] = true;
+        });
+      } else if (item.type === "category") {
+        state.categories[item.data.category.id] = item.data.category;
+        item.data.placements.forEach(place => {
+          const week = getWeek(place.weekId);
+          if (week && !week.rows.some(row => row.type === "category" && row.refId === item.data.category.id)) {
+            week.rows.splice(Math.min(place.index, week.rows.length), 0, place.row);
+          }
+        });
+        (item.data.taskAssignments || []).forEach(taskId => { if (state.tasks[taskId]) state.tasks[taskId].categoryId = item.data.category.id; });
+      }
+      state.trash = state.trash.filter(entry => entry.id !== trashId);
+      state.ui.modal = "trash";
+    });
+  }
+
+  function permanentlyDeleteTrash(trashId) {
+    if (!confirm("Excluir este item definitivamente?")) return;
+    mutate(() => {
+      state.trash = state.trash.filter(entry => entry.id !== trashId);
+      state.ui.modal = "trash";
+    });
+  }
+
+
+  function reorderRow(weekId, sourceId, targetId) {
+    const week = getWeek(weekId);
+    if (!week || sourceId === targetId) return;
+    const sourceIndex = week.rows.findIndex(row => row.id === sourceId);
+    const targetIndex = week.rows.findIndex(row => row.id === targetId);
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    mutate(() => {
+      const [row] = week.rows.splice(sourceIndex, 1);
+      week.rows.splice(targetIndex, 0, row);
+    });
+  }
+
+  function togglePause(weekId, taskId) {
+    const week = getWeek(weekId);
+    if (!week) return;
+    mutate(() => {
+      if (week.pausedTasks[taskId]) delete week.pausedTasks[taskId];
+      else week.pausedTasks[taskId] = true;
+    });
+  }
+
+  function updateDate(weekId, dayIndex, value) {
+    const parsed = parseShortDate(value);
+    if (!parsed) { alert("Data inválida. Use DD/MM/AA ou DD/MM/AAAA."); render(); return; }
+    const week = getWeek(weekId);
+    if (!week) return;
+    mutate(() => { week.days[dayIndex].date = parsed; });
+  }
+
+
+  function createNextWeek() {
+    const previous = state.weeks[state.weeks.length - 1];
+    const dates = previous.days.map(day => day.date).sort();
+    const start = addDays(dates[dates.length - 1], 1);
+    mutate(() => {
+      const taskMap = new Map(); const categoryMap = new Map(); const rows = [];
+      previous.rows.forEach(row => {
+        if (row.type === "category") {
+          const source = getCategory(row.refId); if (!source) return;
+          const id = uid("cat"); categoryMap.set(row.refId, id);
+          state.categories[id] = { ...clone(source), id, lineageId: source.lineageId || source.id };
+          rows.push({ id: uid("row"), type: "category", refId: id });
+        } else {
+          const source = getTask(row.refId); if (!source) return;
+          const id = uid("task"); taskMap.set(row.refId, id);
+          state.tasks[id] = { ...clone(source), id, lineageId: source.lineageId || source.id, categoryId: "", anchorDate: source.goal.type === "interval" ? source.anchorDate : start };
+          rows.push({ id: uid("row"), type: "task", refId: id });
+        }
+      });
+      const newWeek = makeWeek(start, rows);
+      state.weeks.push(newWeek); state.ui.analysisWeekId = newWeek.id;
+    });
+    requestAnimationFrame(() => document.querySelector(".week-card:last-of-type")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+  function goToCurrentWeek() {
+    const realToday = isoFromDate(new Date());
+    const week = weekForDate(realToday);
+    if (!week) {
+      setStatus(`Nenhuma semana contém a data atual (${formatDateLong(realToday)}).`);
+      return;
+    }
+    week.days.forEach(day => {
+      delete state.ui.collapsedMonths[monthKey(day.date)];
+      delete state.ui.collapsedYears[yearKey(day.date)];
+    });
+    render();
+    scheduleSave();
+    requestAnimationFrame(() => document.querySelector(`[data-week-card="${week.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+
+  function toggleWeekCollapse(weekId) {
+    const week = getWeek(weekId);
+    if (!week) return;
+    mutate(() => { week.collapsed = !week.collapsed; });
+  }
+
+  function toggleTheme() {
+    mutate(() => { state.theme = state.theme === "dark" ? "light" : "dark"; });
+  }
+
+
+  function archiveTodayNotes(oldDate) {
+    const text = String(state.today.notes || "").trim();
+    if (!text) return;
+    const existing = state.noteHistory.find(note => note.date === oldDate);
+    if (existing) { existing.text = text; existing.archivedAt = new Date().toISOString(); }
+    else state.noteHistory.unshift({ id: uid("note"), date: oldDate, text, archivedAt: new Date().toISOString() });
+  }
+
+  function moveToday(newDate) {
+    if (!newDate || newDate === state.today.date) return;
+    mutate(() => {
+      archiveTodayNotes(state.today.date);
+      state.today.date = newDate;
+      state.today.notes = "";
+    });
+  }
+
+  function toggleMonthCollapse(key) {
+    mutate(() => { state.ui.collapsedMonths[key] = !state.ui.collapsedMonths[key]; });
+  }
+
+  function toggleYearCollapse(year) {
+    mutate(() => { state.ui.collapsedYears[year] = !state.ui.collapsedYears[year]; });
+  }
+
+  function exportBackup() {
+    const blob = new Blob([JSON.stringify(snapshotState(), null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `backup_checklist_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus("Backup completo criado.");
+  }
+
+  function importBackupFile(file, options = {}) {
+    if (!file) return;
+    const fromGate = !!options.fromGate;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        if (parsed?.version !== VERSION || parsed?.schemaMode !== SCHEMA_MODE) throw new Error("Backup incompatível com a v10.5");
+        const imported = normalizeState(parsed);
+        if (imported.security.pinHash) {
+          const pin = prompt("Digite o PIN de 6 dígitos da base importada:");
+          if (!pin || hashPin(pin) !== imported.security.pinHash) {
+            alert("PIN incorreto. A importação foi cancelada.");
+            return;
+          }
+        } else if (fromGate) {
+          alert("Este backup não possui um PIN válido. A importação pela tela inicial foi cancelada.");
+          return;
+        } else {
+          imported.security.pinHash = state.security.pinHash;
+        }
+        const confirmationText = fromGate
+          ? "Importar este backup e usar o PIN dele para acessar o checklist?"
+          : "A importação substituirá todos os dados atuais. Continuar?";
+        if (!confirm(confirmationText)) return;
+        if (!fromGate) undoStack.push(snapshotState());
+        redoStack = [];
+        state = imported;
+        applyTheme();
+        state.ui.modal = "";
+        saveNow();
+        if (fromGate) {
+          gateError = "";
+          gateMode = "unlock";
+          unlocked = true;
+          render();
+          alert("Backup importado com sucesso.");
+        } else {
+          render();
+          alert("Backup importado. Os dados anteriores podem ser recuperados imediatamente com Ctrl+Z enquanto esta página permanecer aberta.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("O arquivo não é um backup válido deste checklist.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function graphScopeOptions(mode) {
+    const entries = allEntries();
+    if (mode === "weekDays") {
+      return state.weeks.map((week, index) => ({ value: week.id, label: `Semana ${index + 1} — ${formatDateShort(week.days[0].date)} a ${formatDateShort(week.days[6].date)}` }));
+    }
+    if (mode === "monthWeeks") {
+      return [...new Set(entries.map(entry => monthKey(entry.date)))].sort().map(key => ({ value: key, label: formatMonthKey(key) }));
+    }
+    if (mode === "yearMonths") {
+      return [...new Set(entries.map(entry => yearKey(entry.date)))].sort().map(year => ({ value: year, label: `Ano ${year}` }));
+    }
+    return [...new Set(entries.map(entry => decadeKey(entry.date)))].sort().map(decade => ({ value: decade, label: `Década de ${decade}` }));
+  }
+
+  function graphTargetOptions(type) {
+    if (type === "task") {
+      const map = new Map(); Object.values(state.tasks).forEach(task => { const key = taskNameKey(task); if (key) map.set(key, task.title); });
+      return [...map.entries()].sort((a,b) => a[1].localeCompare(b[1], "pt-BR")).map(([value,label]) => ({ value, label }));
+    }
+    if (type === "category") {
+      const map = new Map(); Object.values(state.categories).forEach(category => { const key = categoryNameKey(category); if (key) map.set(key, category.title); });
+      map.set("", "Sem categoria");
+      return [...map.entries()].sort((a,b) => a[1].localeCompare(b[1], "pt-BR")).map(([value,label]) => ({ value, label }));
+    }
+    return [];
+  }
+  function comparePeriodOptions(type) {
+    if (type === "week") return state.weeks.map((week, index) => ({ value: week.id, label: `Semana ${index + 1} — ${formatDateShort(week.days[0].date)} a ${formatDateShort(week.days[6].date)}` }));
+    if (type === "month") return availableMonthKeys().map(key => ({ value: key, label: formatMonthKey(key) }));
+    if (type === "year") return [...new Set(allEntries().map(entry => yearKey(entry.date)))].sort().map(year => ({ value: year, label: `Ano ${year}` }));
+    return [...new Set(allEntries().map(entry => decadeKey(entry.date)))].sort().map(decade => ({ value: decade, label: `Década de ${decade}` }));
+  }
+
+  function entriesForComparePeriod(type, value) {
+    if (type === "week") return entriesForWeek(value);
+    if (type === "month") return entriesForMonth(value);
+    if (type === "year") return entriesForYear(value);
+    return entriesForDecade(value);
+  }
+
+  function comparePeriodKind(type) {
+    return type === "week" ? "week" : type === "month" ? "month" : type === "year" ? "year" : "decade";
+  }
+
+  function normalizeGraphConfig(config = state.ui.graph) {
+    const mode = ["weekDays", "monthWeeks", "yearMonths", "decadeYears", "comparePeriods"].includes(config.mode) ? config.mode : "weekDays";
+    const targetType = ["all", "task", "category"].includes(config.targetType) ? config.targetType : "all";
+    const targetOptions = graphTargetOptions(targetType);
+    const targetId = targetType === "all" ? "" : (targetOptions.some(option => option.value === config.targetId) ? config.targetId : (targetOptions[0]?.value || ""));
+    const compareType = ["week", "month", "year", "decade"].includes(config.compareType) ? config.compareType : "week";
+    const compareOptions = comparePeriodOptions(compareType);
+    const compareA = compareOptions.some(option => option.value === config.compareA) ? config.compareA : (compareOptions[0]?.value || "");
+    const fallbackB = compareOptions[1]?.value || compareOptions[0]?.value || "";
+    const compareB = compareOptions.some(option => option.value === config.compareB) ? config.compareB : fallbackB;
+    if (mode === "comparePeriods") return { mode, scope: "", targetType, targetId, compareType, compareA, compareB };
+    const scopeOptions = graphScopeOptions(mode);
+    const scope = scopeOptions.some(option => option.value === config.scope) ? config.scope : (scopeOptions[0]?.value || "");
+    return { mode, scope, targetType, targetId, compareType, compareA, compareB };
+  }
+
+  function targetLabel(type, id) {
+    if (type === "all") return "Todas as atividades";
+    return graphTargetOptions(type).find(option => option.value === id)?.label || (type === "task" ? "Meta" : "Categoria");
+  }
+  function graphDataFor(config) {
+    const cfg = normalizeGraphConfig(config);
+    if (cfg.mode === "comparePeriods") {
+      const options = comparePeriodOptions(cfg.compareType);
+      const aLabel = options.find(option => option.value === cfg.compareA)?.label || "Período A";
+      const bLabel = options.find(option => option.value === cfg.compareB)?.label || "Período B";
+      const kind = comparePeriodKind(cfg.compareType);
+      const aStats = aggregateStats(entriesForComparePeriod(cfg.compareType, cfg.compareA), kind, cfg.targetType, cfg.targetId);
+      const bStats = aggregateStats(entriesForComparePeriod(cfg.compareType, cfg.compareB), kind, cfg.targetType, cfg.targetId);
+      const typeLabel = cfg.compareType === "week" ? "semanas" : cfg.compareType === "month" ? "meses" : cfg.compareType === "year" ? "anos" : "décadas";
+      return { ...cfg, title: `Comparação entre ${typeLabel}`, scopeLabel: `${aLabel} × ${bLabel}`, targetLabel: targetLabel(cfg.targetType, cfg.targetId), points: [
+        { label: aLabel, value: aStats.percent }, { label: bLabel, value: bStats.percent }
+      ] };
+    }
+
+    const options = graphScopeOptions(cfg.mode);
+    const scopeLabel = options.find(option => option.value === cfg.scope)?.label || "Sem dados";
+    let points = [];
+    let title = "";
+    if (cfg.mode === "weekDays") {
+      const week = getWeek(cfg.scope);
+      title = "Variação entre os dias da semana";
+      if (week) {
+        points = week.days.map((day, dayIndex) => {
+          if (day.date > state.today.date) return null;
+          const entry = { week, weekIndex: state.weeks.indexOf(week), dayIndex, date: day.date };
+          const stats = aggregateStats([entry], "day", cfg.targetType, cfg.targetId);
+          return { label: `${WEEKDAY_NAMES[dateFromISO(day.date).getDay()]} ${formatDateShort(day.date).slice(0, 5)}`, value: stats.percent };
+        }).filter(Boolean);
+      }
+    } else if (cfg.mode === "monthWeeks") {
+      title = "Variação entre as semanas do mês";
+      const key = cfg.scope;
+      points = state.weeks.map((week, weekIndex) => {
+        const entries = entriesForWeek(week.id).filter(entry => monthKey(entry.date) === key && entry.date <= state.today.date);
+        if (!entries.length) return null;
+        const stats = aggregateStats(entries, "week", cfg.targetType, cfg.targetId);
+        const dates = entries.map(entry => entry.date).sort();
+        return { label: `S${weekIndex + 1} ${formatDateShort(dates[0]).slice(0, 5)}–${formatDateShort(dates[dates.length - 1]).slice(0, 5)}`, value: stats.percent };
+      }).filter(Boolean);
+    } else if (cfg.mode === "yearMonths") {
+      title = "Variação entre os meses do ano";
+      const year = cfg.scope;
+      for (let month = 1; month <= 12; month++) {
+        const key = `${year}-${String(month).padStart(2, "0")}`;
+        const entries = entriesForMonth(key).filter(entry => entry.date <= state.today.date);
+        if (!entries.length) continue;
+        const stats = aggregateStats(entries, "month", cfg.targetType, cfg.targetId);
+        points.push({ label: MONTH_NAMES[month - 1].slice(0, 3), value: stats.percent });
+      }
+    } else {
+      title = "Variação entre os anos da década";
+      const decade = Number(cfg.scope);
+      for (let year = decade; year <= decade + 9; year++) {
+        const entries = entriesForYear(year).filter(entry => entry.date <= state.today.date);
+        if (!entries.length) continue;
+        const stats = aggregateStats(entries, "year", cfg.targetType, cfg.targetId);
+        points.push({ label: String(year), value: stats.percent });
+      }
+    }
+    return { ...cfg, title, scopeLabel, targetLabel: targetLabel(cfg.targetType, cfg.targetId), points };
+  }
+
+  function renderLineChart(graph) {
+    if (!graph.points.length) return `<div class="chart-empty">Não há dados para esta comparação.</div>`;
+    const width = 960;
+    const height = 380;
+    const left = 62;
+    const right = 28;
+    const top = 34;
+    const bottom = 82;
+    const plotWidth = width - left - right;
+    const plotHeight = height - top - bottom;
+    const pointInset = 40;
+    const dataLeft = left + pointInset;
+    const dataRight = width - right - 18;
+    const dataWidth = Math.max(1, dataRight - dataLeft);
+    const xFor = index => graph.points.length === 1 ? dataLeft + dataWidth / 2 : dataLeft + index * dataWidth / (graph.points.length - 1);
+    const yFor = value => top + (100 - value) * plotHeight / 100;
+    const grid = [0, 25, 50, 75, 100].map(value => {
+      const y = yFor(value);
+      return `<line class="chart-grid" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"></line><text class="chart-y-label" x="${left - 10}" y="${y + 4}" text-anchor="end">${value}%</text>`;
+    }).join("");
+    const pointString = graph.points.map((point, index) => `${xFor(index)},${yFor(point.value)}`).join(" ");
+    const labels = graph.points.map((point, index) => {
+      const x = xFor(index);
+      const y = yFor(point.value);
+      return `<circle class="chart-point" cx="${x}" cy="${y}" r="6"></circle><text class="chart-value" x="${x}" y="${Math.max(18, y - 13)}" text-anchor="middle">${point.value}%</text><text class="chart-label" x="${x}" y="${height - 38}" text-anchor="end" transform="rotate(-28 ${x} ${height - 38})">${escapeHTML(point.label)}</text>`;
+    }).join("");
+    return `<div class="graph-box"><svg class="line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHTML(graph.title)}"><line class="chart-axis" x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}"></line><line class="chart-axis" x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}"></line>${grid}<polyline class="chart-line" points="${pointString}"></polyline>${labels}</svg></div>`;
+  }
+
+  function renderGraphAnalysis() {
+    state.ui.graph = normalizeGraphConfig(state.ui.graph);
+    const graph = graphDataFor(state.ui.graph);
+    const modeButtons = [
+      ["weekDays", "Dias da semana"], ["monthWeeks", "Semanas do mês"], ["yearMonths", "Meses do ano"], ["decadeYears", "Anos da década"], ["comparePeriods", "Comparar períodos"]
+    ].map(([mode, label]) => `<button class="graph-mode-btn ${state.ui.graph.mode === mode ? "active" : ""}" data-graph-mode="${mode}">${label}</button>`).join("");
+    const targetTypes = [["all","Todas as atividades"],["task","Uma meta específica"],["category","Uma categoria específica"]]
+      .map(([type,label]) => `<option value="${type}" ${state.ui.graph.targetType === type ? "selected" : ""}>${label}</option>`).join("");
+    const targetOptions = graphTargetOptions(state.ui.graph.targetType).map(option => `<option value="${escapeHTML(option.value)}" ${option.value === state.ui.graph.targetId ? "selected" : ""}>${escapeHTML(option.label)}</option>`).join("");
+
+    let periodControls = "";
+    if (state.ui.graph.mode === "comparePeriods") {
+      const compareTypes = [["week","Semanas"],["month","Meses"],["year","Anos"],["decade","Décadas"]]
+        .map(([value,label]) => `<option value="${value}" ${state.ui.graph.compareType === value ? "selected" : ""}>${label}</option>`).join("");
+      const compareOptions = comparePeriodOptions(state.ui.graph.compareType);
+      const optionsA = compareOptions.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === state.ui.graph.compareA ? "selected" : ""}>${escapeHTML(option.label)}</option>`).join("");
+      const optionsB = compareOptions.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === state.ui.graph.compareB ? "selected" : ""}>${escapeHTML(option.label)}</option>`).join("");
+      periodControls = `<label>Ordem<select class="graph-select" id="graphCompareTypeSelect">${compareTypes}</select></label><label>Período A<select class="graph-select" id="graphCompareASelect">${optionsA}</select></label><label>Período B<select class="graph-select" id="graphCompareBSelect">${optionsB}</select></label>`;
+    } else {
+      const scopes = graphScopeOptions(state.ui.graph.mode).map(option => `<option value="${escapeHTML(option.value)}" ${option.value === state.ui.graph.scope ? "selected" : ""}>${escapeHTML(option.label)}</option>`).join("");
+      periodControls = `<label>Período<select class="graph-select" id="graphScopeSelect">${scopes}</select></label>`;
+    }
+
+    return `<div class="analysis-section graph-panel"><h3>${escapeHTML(graph.title)}</h3><div class="analysis-subtitle">${escapeHTML(graph.scopeLabel)} • ${escapeHTML(graph.targetLabel)}</div><div class="graph-toolbar"><div class="graph-modes">${modeButtons}</div><div class="analysis-selector-row">${periodControls}<label>Conteúdo<select class="graph-select" id="graphTargetTypeSelect">${targetTypes}</select></label>${state.ui.graph.targetType === "all" ? "" : `<label>${state.ui.graph.targetType === "task" ? "Meta" : "Categoria"}<select class="graph-select" id="graphTargetIdSelect">${targetOptions}</select></label>`}</div></div>${renderLineChart(graph)}${state.ui.graph.mode === "comparePeriods" ? `<div class="comparison-note">Os dois períodos usam a mesma ordem e os cálculos são cortados na data definida em Hoje.</div>` : ""}</div>`;
+  }
+
+
+  function statusClass(status) {
+    return status === "done" ? "filled" : status === "missed" ? "missed" : status === "excused" ? "excused" : "";
+  }
+
+  function statusSymbol(status) {
+    return status === "done" ? "✓" : status === "missed" ? "✕" : status === "excused" ? "…" : "";
+  }
+
+  function renderTaskCell(week, task, dayIndex) {
+    const date = week.days[dayIndex].date;
+    const dayClass = autoDayClass(week, dayIndex);
+    if (taskIsPaused(week, task.id)) return `<td class="check-cell ${dayClass}"><div class="paused-cell" title="Atividade pausada nesta semana">⏸</div></td>`;
+    if (!taskIsScheduled(task, date)) return `<td class="check-cell ${dayClass}"><div class="paused-cell" title="Esta meta não está prevista neste dia">—</div></td>`;
+    const status = statusOf(week, task.id, dayIndex);
+    const animationClass = lastMarkedCell === `${week.id}|${task.id}|${dayIndex}` ? " just-marked" : "";
+    return `<td class="check-cell ${dayClass}"><button class="cell-btn ${statusClass(status)}${animationClass}" data-toggle-cell="1" data-week="${week.id}" data-task="${task.id}" data-day="${dayIndex}" data-grid-cell="1" title="Vazio → concluída → não feita → justificada → vazio"><span class="box">${statusSymbol(status)}</span></button></td>`;
+  }
+
+  function filteredRowsForWeek(week) {
+    const query = normalizeName(state.ui.search); if (!query) return week.rows;
+    const matching = new Set(); let currentCategory = null;
+    week.rows.forEach(row => {
+      if (row.type === "category") { currentCategory = getCategory(row.refId); if (normalizeName(currentCategory?.title).includes(query)) matching.add(row.id); }
+      else {
+        const task = getTask(row.refId);
+        if (normalizeName(task?.title).includes(query) || normalizeName(currentCategory?.title).includes(query)) matching.add(row.id);
+      }
+    });
+    // Keep matching category headers for matching tasks.
+    let lastCategoryRow = null;
+    week.rows.forEach(row => { if (row.type === "category") lastCategoryRow = row; else if (matching.has(row.id) && lastCategoryRow) matching.add(lastCategoryRow.id); });
+    return week.rows.filter(row => matching.has(row.id));
+  }
+  function renderWeekExpanded(week) {
+    const rows = filteredRowsForWeek(week).map(row => {
+      if (row.type === "category") {
+        const category = getCategory(row.refId); if (!category) return "";
+        return `<tr class="category-row sortable-row" draggable="true" data-week="${week.id}" data-row="${row.id}"><td colspan="8" class="category-full-cell"><div class="category-full"><span class="drag-handle" title="Arrastar categoria">↕</span><input class="category-input" value="${escapeHTML(category.title)}" data-category="${category.id}" aria-label="Nome da categoria"><button class="category-delete" data-delete-category="${category.id}" title="Mover categoria para a lixeira">🗑</button></div></td></tr>`;
+      }
+      const task = getTask(row.refId); if (!task) return "";
+      return `<tr class="task-row sortable-row" draggable="true" data-week="${week.id}" data-row="${row.id}"><td><div class="meta-cell"><span class="drag-handle" title="Arrastar atividade">↕</span><div class="task-main"><div class="task-title">${escapeHTML(task.title)}</div><div class="task-badges"><span class="tiny-badge">🎯 ${escapeHTML(goalLabel(task))}</span>${taskIsPaused(week, task.id) ? `<span class="tiny-badge">⏸ pausada</span>` : ""}</div></div><div class="row-tools"><button data-edit-task="${task.id}" data-week="${week.id}" title="Editar meta e frequência">⚙</button><button data-pause-task="${task.id}" data-week="${week.id}" title="Pausar ou retomar nesta semana">⏸</button><button class="remove-row" data-delete-task="${task.id}" title="Mover atividade para a lixeira">🗑</button></div></div></td>${week.days.map((_, dayIndex) => renderTaskCell(week, task, dayIndex)).join("")}</tr>`;
+    }).join("");
+    const headers = week.days.map((day, dayIndex) => { const d = dateFromISO(day.date); return `<th class="${autoDayClass(week, dayIndex)}"><div class="day-header"><span class="day-name">${WEEKDAY_NAMES[d.getDay()]}</span><input class="date-input" data-week="${week.id}" data-day="${dayIndex}" value="${formatDateShort(day.date)}"></div></th>`; }).join("");
+    const percentages = week.days.map((day, dayIndex) => { const summary = daySummary({ week, weekIndex: state.weeks.indexOf(week), dayIndex, date: day.date }); return `<td class="${autoPercentClass(summary.percent, !!summary.scheduled)}">${summary.future ? "—" : `${summary.percent}%`}</td>`; }).join("");
+    return `<div class="week-scroll"><div class="table-shell"><table><colgroup><col class="meta-col">${"<col class=\"day-col\">".repeat(7)}</colgroup><thead><tr><th class="meta-head">Meta</th>${headers}</tr></thead><tbody>${rows || `<tr><td colspan="8"><div class="empty-state">Nenhuma linha corresponde ao filtro.</div></td></tr>`}</tbody><tfoot><tr><td class="daily-label">Conclusão do dia</td>${percentages}</tr></tfoot></table></div></div>`;
+  }
+
+  function renderWeekCollapsed(week) {
+    const summaries = week.days.map((day, dayIndex) => daySummary({ week, weekIndex: state.weeks.indexOf(week), dayIndex, date: day.date }));
+    const headers = week.days.map((day, dayIndex) => { const d = dateFromISO(day.date); const summary = summaries[dayIndex]; return `<th class="${autoPercentClass(summary.percent, !!summary.scheduled)}"><div class="day-header"><span class="day-name">${WEEKDAY_NAMES[d.getDay()]}</span><span>${formatDateShort(day.date)}</span></div></th>`; }).join("");
+    const status = summaries.map(summary => `<td class="${autoPercentClass(summary.percent, !!summary.scheduled)}"><div class="status-square ${summary.symbol === "✓" ? "status-good" : summary.symbol === "✕" ? "status-bad" : "status-none"}">${summary.symbol}</div></td>`).join("");
+    const percentages = summaries.map(summary => `<td class="${autoPercentClass(summary.percent, !!summary.scheduled)}">${summary.future ? "—" : `${summary.percent}%`}</td>`).join("");
+    return `<div class="week-scroll"><div class="table-shell"><table class="collapsed-table"><colgroup><col class="meta-col">${"<col class=\"day-col\">".repeat(7)}</colgroup><thead><tr><th class="meta-head">Meta</th>${headers}</tr></thead><tbody><tr><td style="font-weight:900;padding:8px">Status automático</td>${status}</tr></tbody><tfoot><tr><td class="daily-label">Conclusão do dia</td>${percentages}</tr></tfoot></table></div></div>`;
+  }
+  function weekHiddenByCollapsedPeriods(week) {
+    const months = [...new Set(week.days.map(day => monthKey(day.date)))];
+    return months.every(key => !!state.ui.collapsedMonths[key]);
+  }
+
+  function renderWeek(week, index) {
+    return `<section class="week-card ${week.collapsed ? "collapsed" : ""} ${weekHiddenByCollapsedPeriods(week) ? "week-hidden-by-period" : ""}" data-week-card="${week.id}">
+      <div class="week-head"><div class="week-title-wrap"><div class="week-title">Semana ${index + 1}</div><div class="week-range">${formatDateShort(week.days[0].date)} a ${formatDateShort(week.days[6].date)}</div></div><div class="week-actions"><button data-toggle-week="${week.id}">${week.collapsed ? "Expandir semana" : "Minimizar semana"}</button><button data-add-task="${week.id}">+ meta</button><button data-add-category="${week.id}">+ categoria</button><button class="danger" data-remove-week="${week.id}">🗑 Semana</button></div></div>
+      ${week.collapsed ? renderWeekCollapsed(week) : renderWeekExpanded(week)}
+    </section>`;
+  }
+
+  function monthCanCollapse(key) {
+    const touching = state.weeks.filter(week => week.days.some(day => monthKey(day.date) === key));
+    return touching.length > 0 && touching.every(week => week.collapsed);
+  }
+
+  function renderCollapsedMonth(key) {
+    const groups = state.weeks.map((week, weekIndex) => {
+      const entries = entriesForWeek(week.id).filter(entry => monthKey(entry.date) === key);
+      if (!entries.length) return null;
+      const stats = aggregateStats(entries, "week");
+      const dates = entries.map(entry => entry.date).sort();
+      return { weekIndex, stats, label: `S${weekIndex + 1}`, range: `${formatDateShort(dates[0]).slice(0,5)}–${formatDateShort(dates[dates.length-1]).slice(0,5)}` };
+    }).filter(Boolean);
+    const headers = groups.map(item => `<th class="${autoPercentClass(item.stats.percent, item.stats.target > 0)}">${item.label}<br><small>${item.range}</small></th>`).join("");
+    const status = groups.map(item => `<td class="${autoPercentClass(item.stats.percent, item.stats.target > 0)}"><div class="status-square ${item.stats.percent >= 100 ? "status-good" : "status-bad"}">${item.stats.percent >= 100 ? "✓" : "✕"}</div></td>`).join("");
+    const percentages = groups.map(item => `<td class="${autoPercentClass(item.stats.percent, item.stats.target > 0)}">${item.stats.percentLabel}</td>`).join("");
+    return `<section class="period-card"><div class="period-head"><b>${formatMonthKey(key)} minimizado</b><button data-toggle-month="${key}">Expandir mês</button></div><div class="period-body"><table class="period-mini-table"><thead><tr><th>Semana</th>${headers}</tr></thead><tbody><tr><td><b>Status</b></td>${status}</tr></tbody><tfoot><tr><td><b>Conclusão</b></td>${percentages}</tr></tfoot></table></div></section>`;
+  }
+  function renderCollapsedYear(year) {
+    const months = availableMonthKeys().filter(key => key.startsWith(`${year}-`));
+    const stats = months.map(key => aggregateStats(entriesForMonth(key), "month"));
+    return `<section class="period-card"><div class="period-head"><b>Ano ${year} minimizado</b><button data-toggle-year="${year}">Expandir ano</button></div><div class="period-body"><table class="period-mini-table"><thead><tr><th>Mês</th>${months.map((key,i) => `<th class="${autoPercentClass(stats[i].percent, stats[i].target > 0)}">${MONTH_NAMES[Number(key.slice(5)) - 1].slice(0, 3)}</th>`).join("")}</tr></thead><tbody><tr><td><b>Status</b></td>${stats.map(item => `<td class="${autoPercentClass(item.percent, item.target > 0)}"><div class="status-square ${item.percent >= 100 ? "status-good" : "status-bad"}">${item.percent >= 100 ? "✓" : "✕"}</div></td>`).join("")}</tr></tbody><tfoot><tr><td><b>Conclusão</b></td>${stats.map(item => `<td class="${autoPercentClass(item.percent, item.target > 0)}">${item.percentLabel}</td>`).join("")}</tr></tfoot></table></div></section>`;
+  }
+  function renderPeriodControls() {
+    const monthKeys = availableMonthKeys();
+    const years = [...new Set(monthKeys.map(key => key.slice(0, 4)))];
+    const cards = [];
+    years.forEach(year => {
+      const months = monthKeys.filter(key => key.startsWith(`${year}-`));
+      const yearCan = months.length && months.every(key => !!state.ui.collapsedMonths[key]);
+      if (state.ui.collapsedYears[year]) cards.push(renderCollapsedYear(year));
+      else {
+        months.forEach(key => {
+          if (state.ui.collapsedMonths[key]) cards.push(renderCollapsedMonth(key));
+          else if (monthCanCollapse(key)) cards.push(`<section class="period-card"><div class="period-head"><b>${formatMonthKey(key)}</b><span class="week-range">Todas as semanas desse mês estão minimizadas.</span><button data-toggle-month="${key}">Transformar em mês minimizado</button></div></section>`);
+        });
+        if (yearCan) cards.push(`<section class="period-card"><div class="period-head"><b>Ano ${year}</b><span class="week-range">Todos os meses com dados estão minimizados.</span><button data-toggle-year="${year}">Transformar em ano minimizado</button></div></section>`);
+      }
+    });
+    return cards.length ? `<div class="periods-wrap">${cards.join("")}</div>` : "";
+  }
+
+  function renderToday() {
+    const week = weekForDate(state.today.date);
+    const dayIndex = dayIndexForDate(week, state.today.date);
+    const entry = week && dayIndex >= 0 ? { week, weekIndex: state.weeks.indexOf(week), dayIndex, date: state.today.date } : null;
+    const summary = daySummary(entry);
+    let tasksHTML = `<div class="empty-state">Não existe uma semana contendo esta data. Crie ou ajuste uma semana.</div>`;
+    if (entry) {
+      const ids = uniqueTaskIdsInWeek(week).filter(taskId => !taskIsPaused(week, taskId) && taskIsScheduled(getTask(taskId), state.today.date));
+      tasksHTML = ids.map(taskId => {
+        const task = getTask(taskId);
+        const status = statusOf(week, taskId, dayIndex);
+        const category = categoryForTaskInWeek(week, taskId);
+        return `<div class="today-task"><div><div class="today-task-title">${escapeHTML(task.title)}</div><div class="today-task-meta">${category ? `${escapeHTML(category.title)} • ` : ""}🎯 ${escapeHTML(goalLabel(task))}</div></div><div class="toolbar-group"><button class="today-state-btn ${statusClass(status)}${lastMarkedCell === `${week.id}|${taskId}|${dayIndex}` ? " just-marked" : ""}" data-toggle-cell="1" data-week="${week.id}" data-task="${taskId}" data-day="${dayIndex}" data-grid-cell="1" title="Vazio → concluída → não feita → justificada → vazio">${statusSymbol(status)}</button></div></div>`;
+      }).join("") || `<div class="empty-state">Nenhuma atividade prevista para este dia.</div>`;
+    }
+    const todayStateChip = summary.complete ? `<span class="metric-chip">✓ Dia completo</span>` : (!summary.scheduled ? `<span class="metric-chip">— Sem metas</span>` : "");
+    return `<section class="today-panel"><div class="today-head"><div class="today-head-copy"><b>Hoje em progresso</b><span>Acompanhe somente o que importa para a data atual do checklist.</span></div><div class="toolbar-group"><input id="todayDateInput" class="select-input" type="date" value="${state.today.date}"><button id="nextTodayBtn">Avançar dia →</button><button id="notesHistoryBtn">Histórico de notas</button><button id="toggleTodayBtn">${state.today.collapsed ? "Expandir" : "Minimizar"}</button></div></div>${state.today.collapsed ? "" : `<div class="today-body"><div class="today-stats"><span class="metric-chip">📅 ${formatDateLong(state.today.date)}</span><span class="metric-chip">✅ ${summary.done}/${summary.possible}</span><span class="metric-chip">📊 ${summary.percent}%</span>${todayStateChip}</div><div class="today-list">${tasksHTML}</div><div><label style="font-size:12px;font-weight:800">Notas temporárias deste dia</label><textarea id="todayNotes" class="today-note" placeholder="Estas notas ficam aqui até você avançar a data manualmente. Depois irão para o histórico.">${escapeHTML(state.today.notes)}</textarea></div></div>`}</section>`;
+  }
+
+  function statsTableRows(entries, kind) {
+    const rows = [];
+    categoryStats(entries, kind).forEach(cat => {
+      const currentCat = cat.streak.current ? `🔥 ${cat.streak.current}` : "";
+      rows.push(`<tr class="category-analysis-row"><td>📁 ${escapeHTML(cat.category.title)}</td><td>✅ ${cat.done}/${cat.target}</td><td>${currentCat}</td><td>🏆 ${cat.streak.longest}</td><td class="${cat.percentLabel === "+100%" ? "percent-over" : ""}">📊 ${cat.percentLabel}</td></tr>`);
+      cat.tasks.sort((a,b) => a.title.localeCompare(b.title,"pt-BR")).forEach(item => {
+        const streak = taskStreakStats(item.taskId);
+        const currentTask = streak.current ? `🔥 ${streak.current}` : "";
+        rows.push(`<tr><td><b>${escapeHTML(item.title)}</b><div class="analysis-subtitle">🎯 ${escapeHTML(item.goal)}${item.excused ? ` • ${item.excused} justificada(s)` : ""}</div></td><td>✅ ${item.done}/${item.target}</td><td>${currentTask}</td><td>🏆 ${streak.longest}</td><td class="${item.percentLabel === "+100%" ? "percent-over" : ""}">📊 ${item.percentLabel}</td></tr>`);
+      });
+    });
+    return rows.join("") || `<tr><td colspan="5">Sem metas neste período.</td></tr>`;
+  }
+
+  function calendarSymbols(entry, streakInfo) {
+    const summary = daySummary(entry); if (!summary.scheduled) return "—";
+    const symbols = [summary.symbol];
+    if (streakInfo.recordDates.includes(entry.date)) symbols.push("🏆");
+    if (streakInfo.currentDates.includes(entry.date)) symbols.push("🔥");
+    return symbols.join(" ");
+  }
+  function renderCalendarForMonth(key) {
+    const [year, monthNumber] = key.split("-").map(Number);
+    const month = monthNumber - 1;
+    const firstDay = new Date(year, month, 1);
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const byDate = new Map(uniqueEntriesByDate(entriesForMonth(key)).map(entry => [entry.date, entry]));
+    const streakInfo = perfectStreaks();
+    const cells = [];
+    for (let i = 0; i < firstDay.getDay(); i++) cells.push(`<div class="calendar-day empty"></div>`);
+    for (let day = 1; day <= lastDate; day++) {
+      const iso = isoFromDate(new Date(year, month, day));
+      const entry = byDate.get(iso);
+      if (!entry) {
+        cells.push(`<div class="calendar-day"><strong>${day}</strong><small>—</small><div class="calendar-symbols">—</div></div>`);
+        continue;
+      }
+      const summary = daySummary(entry);
+      const symbols = calendarSymbols(entry, streakInfo);
+      const recordClass = streakInfo.recordDates.includes(iso) ? "current-record" : "";
+      cells.push(`<div class="calendar-day ${autoPercentClass(summary.percent, !!summary.scheduled)} ${recordClass}" title="${summary.future ? "Ainda não considerado" : `${summary.done}/${summary.possible}; ${summary.excused} justificadas`}"><strong>${day}</strong><small>${summary.future ? "—" : `${summary.percent}%`}</small><div class="calendar-symbols">${symbols}</div></div>`);
+    }
+    const monthStats = aggregateStats(entriesForMonth(key), "month");
+    return `<div class="month-card"><h4>${formatMonthKey(key)}</h4><div class="month-total">📊 Conclusão: <strong>${monthStats.percentLabel}</strong> • ✅ ${monthStats.done}/${monthStats.target}</div><div class="calendar">${WEEKDAY_NAMES.map(name => `<div class="dow">${name}</div>`).join("")}${cells.join("")}</div><div class="legend"><span>✓ completo</span><span>✕ falhas</span><span>justificadas são ignoradas no percentual</span><span>🏆 recorde</span><span>🔥 streak atual</span><span>— sem metas</span></div></div>`;
+  }
+
+  function entriesBetween(startISO, endISO) {
+    return allEntries().filter(entry => entry.date >= startISO && entry.date <= endISO && entry.date <= state.today.date);
+  }
+
+  function trendWindow(days) {
+    const currentEnd = state.today.date;
+    const currentStart = addDays(currentEnd, -(days - 1));
+    const previousEnd = addDays(currentStart, -1);
+    const previousStart = addDays(previousEnd, -(days - 1));
+    const currentEntries = entriesBetween(currentStart, currentEnd);
+    const previousEntries = entriesBetween(previousStart, previousEnd);
+    const currentOverall = aggregateStats(currentEntries, "range");
+    const keys = new Set([...filteredTaskIds(currentEntries), ...filteredTaskIds(previousEntries)]);
+    const changes = [...keys].map(key => {
+      const current = taskPeriodStats(key, currentEntries, "range");
+      const previous = taskPeriodStats(key, previousEntries, "range");
+      const currentPercent = current?.percent || 0;
+      const previousPercent = previous?.percent || 0;
+      const title = current?.title || previous?.title || key;
+      return { key, title, currentPercent, previousPercent, delta: currentPercent - previousPercent, hasCurrent: !!current?.target, hasPrevious: !!previous?.target };
+    }).filter(item => item.hasCurrent || item.hasPrevious);
+    const improved = changes.filter(item => item.delta > 0).sort((a,b) => b.delta - a.delta || a.title.localeCompare(b.title,"pt-BR")).slice(0,3);
+    const worsened = changes.filter(item => item.delta < 0).sort((a,b) => a.delta - b.delta || a.title.localeCompare(b.title,"pt-BR")).slice(0,3);
+    return { days, currentStart, currentEnd, currentOverall, improved, worsened };
+  }
+
+  function renderTrendItems(items, direction) {
+    if (!items.length) return `<div class="trend-neutral">Nenhuma mudança relevante.</div>`;
+    return `<div class="trend-list">${items.map(item => `<div class="trend-row"><span>${escapeHTML(item.title)} <span style="color:var(--muted)">(${item.currentPercent}%)</span></span><span class="${direction === "up" ? "trend-positive" : "trend-negative"}">${item.delta > 0 ? "+" : ""}${item.delta} pp</span></div>`).join("")}</div>`;
+  }
+
+  function renderTrendPanel() {
+    const windows = [7, 30, 90].map(trendWindow);
+    return `<div><h2>Painel de tendências</h2><div class="analysis-subtitle">Cada janela termina na data definida em Hoje. Melhoras e pioras comparam a janela atual com a janela imediatamente anterior de mesmo tamanho.</div><div class="analysis-cards">${windows.map(item => `<div class="analysis-card"><span>Últimos ${item.days} dias</span><b>${item.currentOverall.percentLabel}</b><div class="analysis-subtitle">${formatDateShort(item.currentStart)} a ${formatDateShort(item.currentEnd)}</div><div style="margin-top:9px;font-weight:900">▲ Mais melhoraram</div>${renderTrendItems(item.improved,"up")}<div style="margin-top:11px;font-weight:900">▼ Mais pioraram</div>${renderTrendItems(item.worsened,"down")}</div>`).join("")}</div></div>`;
+  }
+
+  function renderAnalysis() {
+    const weekId = currentAnalysisWeekId();
+    const month = currentAnalysisMonthKey();
+    const weekEntries = entriesForWeek(weekId);
+    const monthEntries = entriesForMonth(month);
+    const weekStats = aggregateStats(weekEntries, "week");
+    const monthStats = aggregateStats(monthEntries, "month");
+    const streak = perfectStreaks();
+    const week = getWeek(weekId);
+    const weekOptions = state.weeks.map((item, index) => `<option value="${item.id}" ${item.id === weekId ? "selected" : ""}>Semana ${index + 1} — ${formatDateShort(item.days[0].date)} a ${formatDateShort(item.days[6].date)}</option>`).join("");
+    const monthOptions = availableMonthKeys().map(key => `<option value="${key}" ${key === month ? "selected" : ""}>${formatMonthKey(key)}</option>`).join("");
+    const calendarKey = currentCalendarMonthKey();
+    const [calendarYear, calendarMonth] = calendarKey.split("-");
+    const calendarMonthOptions = MONTH_NAMES.map((name, index) => {
+      const value = String(index + 1).padStart(2, "0");
+      return `<option value="${value}" ${value === calendarMonth ? "selected" : ""}>${name[0].toUpperCase()}${name.slice(1)}</option>`;
+    }).join("");
+    const calendarYearOptions = availableAnalysisYears().map(year => `<option value="${year}" ${year === calendarYear ? "selected" : ""}>${year}</option>`).join("");
+
+    const allowedViews = ["general", "trends", "weekly", "monthly", "calendar", "graphs"];
+    openAnalysisViews = new Set([...openAnalysisViews].filter(view => allowedViews.includes(view)));
+    const options = [
+      ["general", "📌", "Análise geral", "Resumo de streaks e dos principais resultados do período atual."],
+      ["trends", "📈", "Painel de tendências", "Veja evolução e queda nos últimos 7, 30 e 90 dias."],
+      ["weekly", "🗓️", "Análise semanal", "Examine atividades e categorias de uma semana específica."],
+      ["monthly", "📅", "Análise mensal", "Veja resultados consolidados de um mês escolhido."],
+      ["calendar", "🧭", "Calendário", "Selecione mês e ano para visualizar desempenho, streaks e recordes."],
+      ["graphs", "📊", "Variações e gráficos", "Compare períodos e acompanhe mudanças nas porcentagens."]
+    ];
+    const optionButtons = options.map(([id, icon, title, copy]) => `<button class="v9-analysis-choice ${openAnalysisViews.has(id) ? "active" : ""}" data-analysis-view="${id}" aria-expanded="${openAnalysisViews.has(id) ? "true" : "false"}"><span class="v9-analysis-choice-icon">${icon}</span><span><strong>${title}</strong><small>${copy}</small></span></button>`).join("");
+
+    function contentFor(view) {
+      if (view === "general") return `<div class="analysis-section"><h3>Análise geral</h3><div class="analysis-cards"><div class="analysis-card">🔥 Streak atual de dias completos<b>${streak.current} ${streak.current === 1 ? "dia" : "dias"}</b></div><div class="analysis-card">🏆 Maior streak all time<b>${streak.longest} ${streak.longest === 1 ? "dia" : "dias"}</b></div><div class="analysis-card">✅ Total da semana selecionada<b>${weekStats.done}/${weekStats.target}</b></div><div class="analysis-card">📊 Total do mês selecionado<b>${monthStats.percentLabel}</b></div></div></div>`;
+      if (view === "trends") return `<div class="analysis-section">${renderTrendPanel()}</div>`;
+      if (view === "weekly") return `<div><div class="analysis-selector-row"><label>Semana exibida<select class="graph-select" id="analysisWeekSelect">${weekOptions}</select></label></div><div class="analysis-section"><h3>${week ? `Semana — ${formatDateShort(week.days[0].date)} a ${formatDateShort(week.days[6].date)}` : "Semana"}</h3><div class="summary">✅ Realizadas: <strong>${weekStats.done}/${weekStats.target}</strong> • 📊 Percentual: <strong>${weekStats.percentLabel}</strong> • … Justificadas: ${weekStats.excused}</div><table class="analysis-table"><thead><tr><th>Atividade ou categoria</th><th>✅ Realizadas</th><th>🔥 Streak atual</th><th>🏆 Maior all time</th><th>📊 Percentual</th></tr></thead><tbody>${statsTableRows(weekEntries, "week")}</tbody></table></div></div>`;
+      if (view === "monthly") return `<div><div class="analysis-selector-row"><label>Mês exibido<select class="graph-select" data-analysis-month-select="1">${monthOptions}</select></label></div><div class="analysis-section"><h3>${month ? formatMonthKey(month) : "Mês"}</h3><div class="summary monthly-summary">✅ Realizadas: <strong>${monthStats.done}/${monthStats.target}</strong> • 📊 Percentual geral: <strong>${monthStats.percentLabel}</strong> • … Justificadas: ${monthStats.excused}</div><table class="analysis-table"><thead><tr><th>Atividade ou categoria</th><th>✅ Realizadas</th><th>🔥 Streak atual</th><th>🏆 Maior all time</th><th>📊 Percentual</th></tr></thead><tbody>${statsTableRows(monthEntries, "month")}</tbody></table></div></div>`;
+      if (view === "calendar") return `<div><div class="analysis-selector-row"><label>Mês<select class="graph-select" id="calendarMonthSelect">${calendarMonthOptions}</select></label><label>Ano<select class="graph-select" id="calendarYearSelect">${calendarYearOptions}</select></label></div><div class="month-grid">${renderCalendarForMonth(`${calendarYear}-${calendarMonth}`)}</div></div>`;
+      return renderGraphAnalysis();
+    }
+
+    const content = allowedViews.filter(view => openAnalysisViews.has(view)).map(view => `<div class="v9-analysis-open-section" data-analysis-content="${view}">${contentFor(view)}</div>`).join("");
+    const empty = content ? "" : `<div class="v9-analysis-empty">Selecione uma ou mais análises acima para exibir os dados.</div>`;
+    return `<section class="analysis-panel" id="analysisPanel"><div class="analysis-content"><div class="v9-analysis-menu"><div class="v9-analysis-options">${optionButtons}</div></div><div class="v9-analysis-display">${content}${empty}</div></div></section>`;
+  }
+
+  function renderTaskEditorModal() {
+    const { taskId, weekId } = state.ui.modalData || {};
+    const task = getTask(taskId);
+    const week = getWeek(weekId) || weekContainingTask(taskId);
+    if (!task) return "";
+    const category = categoryForTaskInWeek(week, task.id);
+    const goalTypes = [["daily","Todos os dias"],["weekly","X vezes por semana"],["monthly","X vezes por mês"],["interval","A cada X dias"]].map(([type,label]) => `<option value="${type}" ${task.goal.type === type ? "selected" : ""}>${label}</option>`).join("");
+    const needsValue = task.goal.type !== "daily";
+    const needsAnchor = task.goal.type === "interval";
+    return `<div class="modal-backdrop"><section class="modal"><div class="modal-head"><h2>Editar atividade</h2><button data-close-modal="1">✕</button></div><div class="modal-body"><div class="form-grid"><div class="form-field"><label>Nome</label><input id="taskTitleEdit" class="text-input" value="${escapeHTML(task.title)}"></div><div class="form-field"><label>Categoria (definida pela posição)</label><input class="text-input" value="${escapeHTML(category?.title || "Sem categoria")}" disabled></div><div class="form-field"><label>Tipo de meta</label><select id="taskGoalTypeEdit" class="select-input">${goalTypes}</select></div><div class="form-field ${needsValue ? "" : "hidden"}" id="taskGoalValueField"><label>Quantidade ou intervalo</label><input id="taskGoalValueEdit" class="number-input" type="number" min="1" value="${task.goal.value}"></div><div class="form-field ${needsAnchor ? "" : "hidden"}" id="taskAnchorField"><label>Data de referência do intervalo</label><input id="taskAnchorEdit" class="select-input" type="date" value="${task.anchorDate}"></div></div><div class="analysis-section"><b>Funcionamento entre semanas</b><div class="analysis-subtitle">Cada semana mantém sua própria meta, posição e categoria. A semana seguinte nasce como cópia da anterior. Renomear uma atividade ou categoria atualiza o mesmo nome nas semanas anteriores da mesma sequência, sem alterar metas ou organização antigas.</div></div></div><div class="modal-actions"><button data-close-modal="1">Cancelar</button><button class="primary" id="saveTaskEditorBtn" data-task="${task.id}" data-week="${weekId || ""}">Salvar alterações</button></div></section></div>`;
+  }
+
+
+  function renderChangePinModal() {
+    const error = String(state.ui.modalData?.pinError || "");
+    return `<div class="modal-backdrop"><section class="modal small"><div class="modal-body">
+      <div class="pin-change-close"><button data-close-modal="1" title="Fechar">✕</button></div>
+      <div class="pin-logo">🔑</div>
+      <div class="pin-change-title"><h2>Alterar PIN</h2><p>Confirme o PIN atual e escolha um novo código numérico de 6 dígitos.</p></div>
+      <div class="pin-change-fields">
+        <div class="pin-change-field"><label>PIN atual</label><input id="currentPinChange" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="••••••" autofocus></div>
+        <div class="pin-change-field"><label>Novo PIN</label><input id="newPinChange" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••"></div>
+        <div class="pin-change-field"><label>Repita o novo PIN</label><input id="confirmPinChange" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••"></div>
+      </div>
+      <div class="pin-error">${escapeHTML(error)}</div>
+      <button class="primary" id="savePinChangeBtn">Alterar PIN</button>
+      <div class="pin-change-hint">O PIN protege o acesso a esta base local. Ele deve conter exatamente 6 números.</div>
+    </div></section></div>`;
+  }
+
+
+  function renderBackupModal() {
+    return `<div class="modal-backdrop"><section class="modal small"><div class="modal-head"><h2>Backup e importação</h2><button data-close-modal="1">✕</button></div><div class="modal-body"><button class="primary" id="exportBackupBtn">Baixar backup completo (.json)</button><button id="chooseImportBtn">Importar e substituir a base atual</button><input id="importBackupInput" type="file" accept="application/json,.json" hidden><div class="analysis-section"><b>Importante</b><div class="analysis-subtitle">O backup inclui PIN, metas sincronizadas, semanas, lixeira, notas, análises e configurações. Para importar, será exigido o PIN da base de origem.</div></div></div></section></div>`;
+  }
+
+  function renderTrashModal() {
+    return `<div class="modal-backdrop"><section class="modal"><div class="modal-head"><h2>Lixeira</h2><button data-close-modal="1">✕</button></div><div class="modal-body">${state.trash.map(item => `<div class="trash-item"><div><b>${item.type === "week" ? "📅" : item.type === "category" ? "📁" : "✅"} ${escapeHTML(item.title)}</b><br><small>Excluído em ${new Date(item.deletedAt).toLocaleString("pt-BR")}</small></div><div class="toolbar-group"><button data-restore-trash="${item.id}">Restaurar</button><button class="danger" data-delete-trash="${item.id}">Excluir definitivamente</button></div></div>`).join("") || `<div class="empty-state">A lixeira está vazia.</div>`}</div></section></div>`;
+  }
+
+  function renderNotesHistoryModal() {
+    return `<div class="modal-backdrop"><section class="modal"><div class="modal-head"><h2>Histórico de notas diárias</h2><button data-close-modal="1">✕</button></div><div class="modal-body">${state.noteHistory.map(note => `<div class="note-history-item"><b>📝 ${formatDateLong(note.date)}</b><textarea class="today-note" data-note-history-text="${note.id}">${escapeHTML(note.text)}</textarea><div class="toolbar-group" style="justify-content:flex-end;margin-top:7px"><button data-save-note-history="${note.id}">Salvar alteração</button><button class="danger" data-delete-note-history="${note.id}">Apagar nota</button></div></div>`).join("") || `<div class="empty-state">Nenhuma nota foi arquivada ainda.</div>`}</div></section></div>`;
+  }
+  function renderShortcutsModal() {
+    return `<div class="modal-backdrop"><section class="modal small"><div class="modal-head"><h2>Atalhos de teclado</h2><button data-close-modal="1">✕</button></div><div class="modal-body"><div class="shortcut-help"><kbd>Setas</kbd><span>Navegar entre quadradinhos</span><kbd>Espaço</kbd><span>Mudar o estado selecionado</span><kbd>Enter</kbd><span>Abrir edição da atividade</span><kbd>N</kbd><span>Nova meta na semana atual</span><kbd>C</kbd><span>Nova categoria</span><kbd>F</kbd><span>Pesquisar</span><kbd>S</kbd><span>Nova semana</span><kbd>Esc</kbd><span>Fechar painéis</span><kbd>Ctrl+Z</kbd><span>Desfazer</span><kbd>Ctrl+Shift+Z</kbd><span>Refazer</span></div></div></section></div>`;
+  }
+
+  function renderModal() {
+    if (state.ui.modal === "taskEditor") return renderTaskEditorModal();
+    if (state.ui.modal === "changePin") return renderChangePinModal();
+    if (state.ui.modal === "backup") return renderBackupModal();
+    if (state.ui.modal === "trash") return renderTrashModal();
+    if (state.ui.modal === "notesHistory") return renderNotesHistoryModal();
+    if (state.ui.modal === "shortcuts") return renderShortcutsModal();
+    return "";
+  }
+
+  function setActiveArea(area, focusId = "") {
+    const allowed = ["today", "planning", "history", "analysis", "settings"];
+    activeArea = allowed.includes(area) ? area : "today";
+    animateArea = true;
+    render();
+    if (focusId) requestAnimationFrame(() => document.getElementById(focusId)?.focus());
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }
+
+  function renderAreaHeader(title, copy, actions = "") {
+    return `<div class="v9-area-head"><div><h2 class="v9-area-title">${escapeHTML(title)}</h2><p class="v9-area-copy">${escapeHTML(copy)}</p></div>${actions ? `<div class="v9-area-actions">${actions}</div>` : ""}</div>`;
+  }
+
+  function renderHistoryHub() {
+    return `<div class="v9-joined-panel">${renderAreaHeader("Histórico", "Consulte informações arquivadas e recupere itens removidos sem misturar essas ações ao planejamento diário.")}
+      <div class="v9-history-joined-body"><div class="v9-hub-grid">
+        <section class="v9-hub-card"><div><div class="hub-icon">📝</div><h3>Notas arquivadas</h3><p>Veja, edite ou apague notas de dias anteriores.</p></div><div><div class="v9-hub-stat">${state.noteHistory.length}</div><button class="primary" id="notesHistoryHubBtn">Abrir histórico de notas</button></div></section>
+        <section class="v9-hub-card"><div><div class="hub-icon">🗑️</div><h3>Lixeira</h3><p>Restaure semanas, categorias e atividades removidas ou exclua definitivamente.</p></div><div><div class="v9-hub-stat">${state.trash.length}</div><button id="trashHubBtn">Abrir lixeira</button></div></section>
+      </div></div></div>`;
+  }
+
+  function renderSettingsHub() {
+    return `${renderAreaHeader("Configurações", "Segurança, aparência, arquivos e atalhos ficam reunidos em um único lugar.")}
+      <div class="v9-settings-grid">
+        <section class="v9-setting-card"><div class="setting-icon">${state.theme === "dark" ? "☀️" : "🌙"}</div><div><h3>Aparência</h3><p>Alterne entre os temas claro e escuro.</p><button id="themeBtn">${state.theme === "dark" ? "Tema claro" : "Tema escuro"}</button></div></section>
+        <section class="v9-setting-card"><div class="setting-icon">🔑</div><div><h3>PIN de acesso</h3><p>Troque o código de 6 dígitos usado para proteger esta base local.</p><button id="changePinBtn">Alterar PIN</button></div></section>
+        <section class="v9-setting-card"><div class="setting-icon">💾</div><div><h3>Backup e importação</h3><p>Exporte todos os dados ou restaure uma base salva anteriormente.</p><button id="backupBtn">Backup/importação</button></div></section>
+        <section class="v9-setting-card"><div class="setting-icon">⌨️</div><div><h3>Atalhos</h3><p>Consulte os comandos de teclado para navegar mais rápido.</p><button id="shortcutsBtn">Ver atalhos</button></div></section>
+      </div>`;
+  }
+
+  function renderActiveArea() {
+    const enter = animateArea ? " v10-area-enter" : "";
+    if (activeArea === "today") return `<section class="v9-area v9-today-area${enter}" data-area="today">${renderToday()}</section>`;
+    if (activeArea === "planning") return `<section class="v9-area${enter}" data-area="planning"><div class="v9-joined-panel">${renderAreaHeader("Planejamento", "Organize semanas, categorias, atividades e metas. As semanas antigas continuam preservando sua própria configuração.")}<div class="v9-planning-toolbar"><input id="globalSearch" class="search-input" placeholder="Pesquisar meta ou categoria (F)" value="${escapeHTML(state.ui.search)}"><button id="currentWeekBtn">Semana atual</button><button class="primary" id="newWeekBtn">+ Nova semana</button></div></div>${renderPeriodControls()}<div id="weeksContainer">${state.weeks.map(renderWeek).join("")}</div></section>`;
+    if (activeArea === "history") return `<section class="v9-area${enter}" data-area="history">${renderHistoryHub()}</section>`;
+    if (activeArea === "analysis") return `<section class="v9-area v9-analysis-wrap${enter}" data-area="analysis"><div class="v9-joined-panel v9-analysis-joined">${renderAreaHeader("Análises", "Tendências, streaks, resultados por período, calendário e comparações ficam concentrados aqui.", `<button class="primary" id="downloadPdfBtn">Baixar análise em PDF</button>`)}${renderAnalysis(true)}</div></section>`;
+    return `<section class="v9-area${enter}" data-area="settings">${renderSettingsHub()}</section>`;
+  }
+
+  function render() {
+    if (!unlocked) { renderGate(); return; }
+    const navItems = [
+      ["today", "☀️", "Hoje"],
+      ["planning", "🗓️", "Planejamento"],
+      ["analysis", "📊", "Análises"],
+      ["history", "🕘", "Histórico"],
+      ["settings", "⚙️", "Configurações"]
+    ];
+    const nav = navItems.map(([id, icon, label]) => `<button class="v9-nav-btn ${activeArea === id ? "active" : ""}" data-app-area="${id}"><span class="v9-nav-icon">${icon}</span><span class="v9-nav-label">${label}</span></button>`).join("");
+    const quickToday = activeArea === "today" ? "" : `<button id="quickTodayBtn">${formatDateShort(state.today.date)}</button>`;
+    const areaHTML = renderActiveArea();
+    animateArea = false;
+    document.getElementById("app").innerHTML = `<main class="wrap v9-shell"><header class="v9-header"><div class="v9-header-top"><div class="v9-brand"><h1>CheckList ✅</h1></div><div class="v9-quick">${quickToday}<button id="undoBtn" ${undoStack.length ? "" : "disabled"}>↶ Desfazer</button><button id="redoBtn" ${redoStack.length ? "" : "disabled"}>↷ Refazer</button><button id="quickLockBtn">🔒 Bloquear</button></div></div><nav class="v9-nav" aria-label="Áreas do checklist">${nav}</nav></header>${areaHTML}<div class="status v9-status" id="status">&nbsp;</div></main><div class="app-version-badge" aria-label="Versão do aplicativo">v${APP_VERSION}</div>${renderModal()}`;
+    bindEvents();
+  }
+
+  function closeModal() {
+    state.ui.modal = "";
+    state.ui.modalData = {};
+    render();
+  }
+
+  function openModal(name, data = {}) {
+    state.ui.modal = name;
+    state.ui.modalData = data;
+    render();
+  }
+
+  function bindEvents() {
+    document.querySelectorAll("[data-app-area]").forEach(button => button.addEventListener("click", () => setActiveArea(button.dataset.appArea)));
+    document.getElementById("quickTodayBtn")?.addEventListener("click", () => setActiveArea("today"));
+    document.getElementById("quickLockBtn")?.addEventListener("click", () => { unlocked = false; gateMode = "unlock"; gateError = ""; renderGate(); });
+    document.getElementById("notesHistoryHubBtn")?.addEventListener("click", () => openModal("notesHistory"));
+    document.getElementById("trashHubBtn")?.addEventListener("click", () => openModal("trash"));
+    document.getElementById("newWeekBtn")?.addEventListener("click", createNextWeek);
+    document.getElementById("currentWeekBtn")?.addEventListener("click", goToCurrentWeek);
+    document.getElementById("undoBtn")?.addEventListener("click", undo);
+    document.getElementById("redoBtn")?.addEventListener("click", redo);
+    document.getElementById("themeBtn")?.addEventListener("click", toggleTheme);
+    document.getElementById("changePinBtn")?.addEventListener("click", () => openModal("changePin"));
+    document.getElementById("backupBtn")?.addEventListener("click", () => openModal("backup"));
+    document.getElementById("shortcutsBtn")?.addEventListener("click", () => openModal("shortcuts"));
+    document.getElementById("downloadPdfBtn")?.addEventListener("click", downloadAnalysisPDF);
+    document.querySelectorAll("[data-analysis-view]").forEach(button => button.addEventListener("click", () => {
+      const view = button.dataset.analysisView || "general";
+      if (openAnalysisViews.has(view)) openAnalysisViews.delete(view); else openAnalysisViews.add(view);
+      render();
+      requestAnimationFrame(() => document.getElementById("analysisPanel")?.scrollIntoView({ block: "start" }));
+    }));
+
+    const search = document.getElementById("globalSearch");
+    search?.addEventListener("input", () => {
+      const pos = search.selectionStart;
+      state.ui.search = search.value;
+      render();
+      requestAnimationFrame(() => {
+        const next = document.getElementById("globalSearch");
+        next?.focus();
+        next?.setSelectionRange(pos, pos);
+      });
+      scheduleSave();
+    });
+
+    document.getElementById("todayDateInput")?.addEventListener("change", event => moveToday(event.target.value));
+    document.getElementById("nextTodayBtn")?.addEventListener("click", () => moveToday(addDays(state.today.date, 1)));
+    document.getElementById("toggleTodayBtn")?.addEventListener("click", () => mutate(() => { state.today.collapsed = !state.today.collapsed; }));
+    document.getElementById("notesHistoryBtn")?.addEventListener("click", () => openModal("notesHistory"));
+    document.getElementById("todayNotes")?.addEventListener("input", event => { state.today.notes = event.target.value; scheduleSave(); });
+
+    document.querySelectorAll("[data-toggle-week]").forEach(button => button.addEventListener("click", () => toggleWeekCollapse(button.dataset.toggleWeek)));
+    document.querySelectorAll("[data-toggle-month]").forEach(button => button.addEventListener("click", () => toggleMonthCollapse(button.dataset.toggleMonth)));
+    document.querySelectorAll("[data-toggle-year]").forEach(button => button.addEventListener("click", () => toggleYearCollapse(button.dataset.toggleYear)));
+    document.querySelectorAll("[data-add-task]").forEach(button => button.addEventListener("click", () => addTask(button.dataset.addTask)));
+    document.querySelectorAll("[data-add-category]").forEach(button => button.addEventListener("click", () => addCategory(button.dataset.addCategory)));
+    document.querySelectorAll("[data-remove-week]").forEach(button => button.addEventListener("click", () => removeWeek(button.dataset.removeWeek)));
+    document.querySelectorAll("[data-toggle-cell]").forEach(button => button.addEventListener("click", () => cycleCell(button.dataset.week, button.dataset.task, Number(button.dataset.day))));
+    document.querySelectorAll("[data-pause-task]").forEach(button => button.addEventListener("click", () => togglePause(button.dataset.week, button.dataset.pauseTask)));
+    document.querySelectorAll("[data-edit-task]").forEach(button => button.addEventListener("click", () => openModal("taskEditor", { taskId: button.dataset.editTask, weekId: button.dataset.week })));
+    document.querySelectorAll("[data-delete-task]").forEach(button => button.addEventListener("click", () => deleteTask(button.dataset.deleteTask)));
+    document.querySelectorAll("[data-delete-category]").forEach(button => button.addEventListener("click", () => deleteCategory(button.dataset.deleteCategory)));
+
+    document.querySelectorAll(".category-input").forEach(input => input.addEventListener("change", () => renameCategory(input.dataset.category, input.value)));
+    document.querySelectorAll(".date-input").forEach(input => {
+      input.addEventListener("change", () => updateDate(input.dataset.week, Number(input.dataset.day), input.value));
+      input.addEventListener("keydown", event => { if (event.key === "Enter") input.blur(); });
+    });
+
+    document.querySelectorAll(".sortable-row").forEach(row => {
+      row.addEventListener("dragstart", event => {
+        if (event.target.matches("input,button,select")) { event.preventDefault(); return; }
+        dragged = { weekId: row.dataset.week, rowId: row.dataset.row };
+        row.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+      });
+      row.addEventListener("dragend", () => {
+        dragged = null;
+        document.querySelectorAll(".dragging,.drag-over").forEach(el => el.classList.remove("dragging", "drag-over"));
+      });
+      row.addEventListener("dragover", event => {
+        if (!dragged || dragged.weekId !== row.dataset.week) return;
+        event.preventDefault();
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+      row.addEventListener("drop", event => {
+        event.preventDefault();
+        row.classList.remove("drag-over");
+        if (dragged && dragged.weekId === row.dataset.week) reorderRow(row.dataset.week, dragged.rowId, row.dataset.row);
+      });
+    });
+
+    document.getElementById("analysisWeekSelect")?.addEventListener("change", event => { state.ui.analysisWeekId = event.target.value; render(); scheduleSave(); requestAnimationFrame(() => document.getElementById("analysisPanel")?.scrollIntoView({ block: "start" })); });
+    document.querySelectorAll("[data-analysis-month-select]").forEach(select => select.addEventListener("change", event => { state.ui.analysisMonthKey = event.target.value; render(); scheduleSave(); requestAnimationFrame(() => document.getElementById("analysisPanel")?.scrollIntoView({ block: "start" })); }));
+    document.getElementById("calendarMonthSelect")?.addEventListener("change", event => {
+      const year = currentCalendarMonthKey().slice(0, 4);
+      state.ui.calendarMonthKey = `${year}-${event.target.value}`;
+      render(); scheduleSave();
+    });
+    document.getElementById("calendarYearSelect")?.addEventListener("change", event => {
+      const month = currentCalendarMonthKey().slice(5, 7);
+      state.ui.calendarMonthKey = `${event.target.value}-${month}`;
+      render(); scheduleSave();
+    });
+    document.querySelectorAll("[data-graph-mode]").forEach(button => button.addEventListener("click", () => {
+      state.ui.graph.mode = button.dataset.graphMode;
+      if (state.ui.graph.mode === "comparePeriods") {
+        const options = comparePeriodOptions(state.ui.graph.compareType || "week");
+        state.ui.graph.compareA = options[0]?.value || "";
+        state.ui.graph.compareB = options[1]?.value || options[0]?.value || "";
+      } else state.ui.graph.scope = graphScopeOptions(state.ui.graph.mode)[0]?.value || "";
+      render(); scheduleSave();
+    }));
+    document.getElementById("graphScopeSelect")?.addEventListener("change", event => { state.ui.graph.scope = event.target.value; render(); scheduleSave(); });
+    document.getElementById("graphCompareTypeSelect")?.addEventListener("change", event => {
+      state.ui.graph.compareType = event.target.value;
+      const options = comparePeriodOptions(state.ui.graph.compareType);
+      state.ui.graph.compareA = options[0]?.value || "";
+      state.ui.graph.compareB = options[1]?.value || options[0]?.value || "";
+      render(); scheduleSave();
+    });
+    document.getElementById("graphCompareASelect")?.addEventListener("change", event => { state.ui.graph.compareA = event.target.value; render(); scheduleSave(); });
+    document.getElementById("graphCompareBSelect")?.addEventListener("change", event => { state.ui.graph.compareB = event.target.value; render(); scheduleSave(); });
+    document.getElementById("graphTargetTypeSelect")?.addEventListener("change", event => {
+      state.ui.graph.targetType = event.target.value;
+      state.ui.graph.targetId = graphTargetOptions(event.target.value)[0]?.value || "";
+      render(); scheduleSave();
+    });
+    document.getElementById("graphTargetIdSelect")?.addEventListener("change", event => { state.ui.graph.targetId = event.target.value; render(); scheduleSave(); });
+
+    document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeModal));
+    document.querySelector(".modal-backdrop")?.addEventListener("click", event => { if (event.target.classList.contains("modal-backdrop")) closeModal(); });
+
+    const submitPinChange = () => {
+      if (state.ui.modal !== "changePin") return;
+      const current = document.getElementById("currentPinChange")?.value || "";
+      const next = document.getElementById("newPinChange")?.value || "";
+      const confirmation = document.getElementById("confirmPinChange")?.value || "";
+      let error = "";
+      if (!validPin(current) || hashPin(current) !== state.security.pinHash) error = "PIN atual incorreto.";
+      else if (!validPin(next)) error = "O novo PIN deve ter exatamente 6 números.";
+      else if (next !== confirmation) error = "Os dois novos PINs são diferentes.";
+      if (error) {
+        state.ui.modalData = { pinError: error };
+        render();
+        return;
+      }
+      state.security.pinHash = hashPin(next);
+      state.ui.modal = "";
+      state.ui.modalData = {};
+      render();
+      saveNow();
+      setStatus("PIN alterado com sucesso ✓");
+    };
+    document.getElementById("savePinChangeBtn")?.addEventListener("click", submitPinChange);
+    document.querySelectorAll("#currentPinChange,#newPinChange,#confirmPinChange").forEach(input => input.addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); submitPinChange(); }
+    }));
+    document.getElementById("exportBackupBtn")?.addEventListener("click", exportBackup);
+    document.getElementById("chooseImportBtn")?.addEventListener("click", () => document.getElementById("importBackupInput")?.click());
+    document.getElementById("importBackupInput")?.addEventListener("change", event => importBackupFile(event.target.files?.[0]));
+    document.querySelectorAll("[data-restore-trash]").forEach(button => button.addEventListener("click", () => restoreTrash(button.dataset.restoreTrash)));
+    document.querySelectorAll("[data-delete-trash]").forEach(button => button.addEventListener("click", () => permanentlyDeleteTrash(button.dataset.deleteTrash)));
+
+    document.getElementById("taskGoalTypeEdit")?.addEventListener("change", event => {
+      const type = event.target.value;
+      document.getElementById("taskGoalValueField")?.classList.toggle("hidden", type === "daily");
+      document.getElementById("taskAnchorField")?.classList.toggle("hidden", type !== "interval");
+    });
+
+    document.getElementById("saveTaskEditorBtn")?.addEventListener("click", button => {
+      const taskId = button.currentTarget.dataset.task;
+      const title = document.getElementById("taskTitleEdit")?.value || "Nova meta";
+      const type = document.getElementById("taskGoalTypeEdit")?.value || "daily";
+      const value = type === "daily" ? 1 : Math.max(1, Number(document.getElementById("taskGoalValueEdit")?.value) || 1);
+      const anchorDate = type === "interval" ? (document.getElementById("taskAnchorEdit")?.value || state.today.date) : (getTask(taskId)?.anchorDate || state.today.date);
+      mutate(() => {
+        const task = getTask(taskId); if (!task) return;
+        syncTaskNameBackward(taskId, title);
+        task.goal = { type, value }; task.anchorDate = anchorDate;
+        state.ui.modal = ""; state.ui.modalData = {};
+      });
+    });
+    document.querySelectorAll("[data-save-note-history]").forEach(button => button.addEventListener("click", () => {
+      const id = button.dataset.saveNoteHistory; const input = document.querySelector(`[data-note-history-text="${id}"]`);
+      mutate(() => { const note = state.noteHistory.find(item => item.id === id); if (note) note.text = String(input?.value || ""); state.ui.modal = "notesHistory"; });
+    }));
+    document.querySelectorAll("[data-delete-note-history]").forEach(button => button.addEventListener("click", () => {
+      const id = button.dataset.deleteNoteHistory; if (!confirm("Apagar esta nota do histórico?")) return;
+      mutate(() => { state.noteHistory = state.noteHistory.filter(item => item.id !== id); state.ui.modal = "notesHistory"; });
+    }));
+
+    document.onkeydown = handleGlobalKeydown;
+  }
+
+  function handleGlobalKeydown(event) {
+    const target = event.target;
+    const typing = !!(target && (target.matches?.("input,textarea,select") || target.isContentEditable));
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+      event.preventDefault();
+      if (event.shiftKey) redo(); else undo();
+      return;
+    }
+    if (event.key === "Escape") {
+      if (state.ui.modal) { closeModal(); return; }
+      if (activeArea !== "today") { setActiveArea("today"); return; }
+      return;
+    }
+    if (typing) return;
+    const key = event.key.toLowerCase();
+    if (key === "n") { event.preventDefault(); activeArea = "planning"; addTask(currentWeekId()); return; }
+    if (key === "c") { event.preventDefault(); activeArea = "planning"; addCategory(currentWeekId()); return; }
+    if (key === "f") { event.preventDefault(); setActiveArea("planning", "globalSearch"); return; }
+    if (key === "s") { event.preventDefault(); activeArea = "planning"; createNextWeek(); return; }
+
+    const focused = document.activeElement?.matches?.("[data-grid-cell]") ? document.activeElement : null;
+    if (!focused) return;
+    const cells = [...document.querySelectorAll("[data-grid-cell]")];
+    const index = cells.indexOf(focused);
+    if (event.key === " ") { event.preventDefault(); focused.click(); return; }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      openModal("taskEditor", { taskId: focused.dataset.task, weekId: focused.dataset.week });
+      return;
+    }
+    let nextIndex = index;
+    if (event.key === "ArrowRight") nextIndex = index + 1;
+    else if (event.key === "ArrowLeft") nextIndex = index - 1;
+    else if (event.key === "ArrowDown") nextIndex = index + 7;
+    else if (event.key === "ArrowUp") nextIndex = index - 7;
+    else return;
+    event.preventDefault();
+    cells[nextIndex]?.focus();
+  }
+
+  function pdfSafe(text) {
+    return String(text ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[–—]/g, "-")
+      .replace(/✓/g, "OK")
+      .replace(/✕/g, "X")
+      .replace(/…/g, "...")
+      .replace(/🔥/g, "STREAK")
+      .replace(/🏆/g, "RECORDE")
+      .replace(/✅/g, "FEITAS")
+      .replace(/🎯/g, "META")
+      .replace(/📊/g, "%")
+      .replace(/📁/g, "CATEGORIA")
+      .replace(/★/g, "*")
+      .replace(/[^\x20-\x7E]/g, "?");
+  }
+
+  function pdfEscape(text) {
+    return pdfSafe(text).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  }
+
+  function wrapText(text, maxChars) {
+    const words = pdfSafe(text).split(/\s+/);
+    const lines = [];
+    let line = "";
+    words.forEach(word => {
+      const next = line ? `${line} ${word}` : word;
+      if (next.length > maxChars && line) { lines.push(line); line = word; }
+      else line = next;
+    });
+    if (line) lines.push(line);
+    return lines.length ? lines : [""];
+  }
+
+  function pdfRowsForPeriod(entries, kind) {
+    const rows = [];
+    const cats = categoryStats(entries, kind);
+    cats.forEach(cat => {
+      rows.push([`CATEGORIA: ${cat.category.title}`, `${cat.done}/${cat.target}`, cat.streak.current ? String(cat.streak.current) : "", String(cat.streak.longest), cat.percentLabel]);
+      cat.tasks.forEach(item => {
+        const streak = taskStreakStats(item.taskId);
+        rows.push([`  ${item.title} (${item.goal})`, `${item.done}/${item.target}`, streak.current ? String(streak.current) : "", String(streak.longest), item.percentLabel]);
+      });
+    });
+    return rows;
+  }
+
+  function allGraphConfigs() {
+    const configs = [];
+    graphScopeOptions("weekDays").forEach(option => configs.push({ mode: "weekDays", scope: option.value, targetType: "all", targetId: "" }));
+    graphScopeOptions("monthWeeks").forEach(option => configs.push({ mode: "monthWeeks", scope: option.value, targetType: "all", targetId: "" }));
+    graphScopeOptions("yearMonths").forEach(option => configs.push({ mode: "yearMonths", scope: option.value, targetType: "all", targetId: "" }));
+    graphScopeOptions("decadeYears").forEach(option => configs.push({ mode: "decadeYears", scope: option.value, targetType: "all", targetId: "" }));
+    return configs;
+  }
+
+  function createPDFDocument() {
+    const W = 595.28;
+    const H = 841.89;
+    const margin = 38;
+    const pages = [];
+    let page = [];
+    let y = margin;
+
+    function newPage() { page = []; pages.push(page); y = margin; }
+    function text(x, top, size, content, bold = false) { page.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x.toFixed(2)} ${(H - top).toFixed(2)} Td (${pdfEscape(content)}) Tj ET`); }
+    function line(x1, top1, x2, top2, width = .5) { page.push(`${width} w ${x1.toFixed(2)} ${(H - top1).toFixed(2)} m ${x2.toFixed(2)} ${(H - top2).toFixed(2)} l S`); }
+    function rect(x, top, w, h, fill = null, stroke = true) {
+      if (fill) page.push(`${fill[0]} ${fill[1]} ${fill[2]} rg`);
+      page.push(`${x.toFixed(2)} ${(H - top - h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re ${fill ? (stroke ? "B" : "f") : "S"}`);
+      page.push("0 0 0 rg");
+    }
+    function ensure(height) { if (y + height > H - margin) newPage(); }
+    function heading(content, size = 16) { ensure(size + 18); text(margin, y + size, size, content, true); y += size + 12; }
+    function paragraph(content, size = 9) {
+      const lines = wrapText(content, 100);
+      ensure(lines.length * (size + 3) + 5);
+      lines.forEach((value, index) => text(margin, y + size + index * (size + 3), size, value));
+      y += lines.length * (size + 3) + 6;
+    }
+    function table(headers, rows, widths) {
+      const rowH = 22;
+      function header() {
+        let x = margin;
+        headers.forEach((headerText, index) => {
+          rect(x, y, widths[index], rowH, [.90, .93, .94]);
+          text(x + 3, y + 14, 7.5, headerText, true);
+          x += widths[index];
+        });
+        y += rowH;
+      }
+      ensure(rowH * 2);
+      header();
+      rows.forEach(row => {
+        if (y + rowH > H - margin) { newPage(); header(); }
+        let x = margin;
+        row.forEach((cell, index) => {
+          const isCategory = String(row[0]).startsWith("CATEGORIA:");
+          rect(x, y, widths[index], rowH, isCategory ? [.94, .96, .97] : null);
+          const max = Math.max(4, Math.floor(widths[index] / 4.5));
+          text(x + 3, y + 14, 7.5, pdfSafe(cell).slice(0, max), isCategory);
+          x += widths[index];
+        });
+        y += rowH;
+      });
+      y += 10;
+    }
+    function chart(graph) {
+      const chartBlock = 250;
+      ensure(chartBlock + 50);
+      text(margin, y + 13, 12, graph.title, true);
+      text(margin, y + 29, 8, `${graph.scopeLabel} - ${graph.targetLabel}`);
+      y += 40;
+      if (!graph.points.length) { paragraph("Sem dados para este grafico."); return; }
+      const left = margin + 36;
+      const right = W - margin - 10;
+      const top = y + 8;
+      const bottom = y + 165;
+      const plotW = right - left;
+      const plotH = bottom - top;
+      const pointInset = 18;
+      const dataLeft = left + pointInset;
+      const dataRight = right - 10;
+      const dataWidth = Math.max(1, dataRight - dataLeft);
+      const xFor = i => graph.points.length === 1 ? dataLeft + dataWidth / 2 : dataLeft + i * dataWidth / (graph.points.length - 1);
+      const yFor = value => top + (100 - value) * plotH / 100;
+      [0, 25, 50, 75, 100].forEach(value => {
+        const topY = yFor(value);
+        line(left, topY, right, topY, .25);
+        text(margin, topY + 3, 6.5, `${value}%`);
+      });
+      line(left, top, left, bottom, .7);
+      line(left, bottom, right, bottom, .7);
+      if (graph.points.length > 1) {
+        page.push("0.18 0.42 0.33 RG 2 w");
+        graph.points.forEach((point, index) => {
+          const x = xFor(index);
+          const yy = yFor(point.value);
+          page.push(`${x.toFixed(2)} ${(H - yy).toFixed(2)} ${index ? "l" : "m"}`);
+        });
+        page.push("S 0 0 0 RG");
+      }
+      graph.points.forEach((point, index) => {
+        const x = xFor(index);
+        const yy = yFor(point.value);
+        rect(x - 2, yy - 2, 4, 4, [.18, .42, .33], false);
+        text(x - 8, Math.max(top + 6, yy - 7), 6.5, `${point.value}%`, true);
+        text(x - 15, bottom + 13 + (index % 2) * 9, 6.2, pdfSafe(point.label).slice(0, 12));
+      });
+      y = bottom + 40;
+    }
+    function calendar(key) {
+      const [year, monthNumber] = key.split("-").map(Number);
+      const month = monthNumber - 1;
+      const first = new Date(year, month, 1).getDay();
+      const last = new Date(year, month + 1, 0).getDate();
+      const rowsNeeded = Math.ceil((first + last) / 7);
+      const cellW = (W - margin * 2) / 7;
+      const cellH = 43;
+      ensure(48 + (rowsNeeded + 1) * cellH);
+      const stats = aggregateStats(entriesForMonth(key), "month");
+      text(margin, y + 13, 12, formatMonthKey(key), true);
+      text(margin + 280, y + 13, 8, `Total: ${stats.percentLabel} (${stats.done}/${stats.target})`);
+      y += 23;
+      WEEKDAY_NAMES.forEach((name, index) => {
+        rect(margin + index * cellW, y, cellW, 18, [.90, .93, .94]);
+        text(margin + index * cellW + 3, y + 12, 7, name, true);
+      });
+      y += 18;
+      const byDate = new Map(uniqueEntriesByDate(entriesForMonth(key)).map(entry => [entry.date, entry]));
+      const streakInfo = perfectStreaks();
+      for (let slot = 0; slot < rowsNeeded * 7; slot++) {
+        const day = slot - first + 1;
+        const row = Math.floor(slot / 7);
+        const col = slot % 7;
+        const topCell = y + row * cellH;
+        if (day < 1 || day > last) { rect(margin + col * cellW, topCell, cellW, cellH, [.98, .98, .98]); continue; }
+        const iso = isoFromDate(new Date(year, month, day));
+        const entry = byDate.get(iso);
+        const fillMap = { none: [1, 1, 1], green: [.80, .94, .84], yellow: [.99, .94, .72], red: [.97, .82, .82] };
+        const summaryForColor = entry ? daySummary(entry) : null;
+        const color = !summaryForColor?.scheduled ? "none" : summaryForColor.percent >= 100 ? "green" : summaryForColor.percent > 50 ? "yellow" : "red";
+        rect(margin + col * cellW, topCell, cellW, cellH, fillMap[color]);
+        text(margin + col * cellW + 4, topCell + 12, 8, String(day), true);
+        if (entry) {
+          const summary = daySummary(entry);
+          text(margin + col * cellW + 4, topCell + 25, 7, summary.future ? "-" : `${summary.percent}%`);
+          text(margin + col * cellW + 4, topCell + 37, 6.2, pdfSafe(calendarSymbols(entry, streakInfo)).slice(0, 13));
+        } else text(margin + col * cellW + 4, topCell + 29, 7, "-");
+      }
+      y += rowsNeeded * cellH + 14;
+    }
+
+    newPage();
+    text(margin, 62, 23, "CheckList - Analise completa", true);
+    text(margin, 83, 9, `Gerado em ${new Date().toLocaleString("pt-BR")}`);
+    y = 108;
+    const globalStreak = perfectStreaks();
+    paragraph(`Streak atual de dias completos: ${globalStreak.current} dia(s). Maior streak all time: ${globalStreak.longest} dia(s). Estados justificados sao ignorados no percentual e nao interrompem streaks.`);
+
+    heading("Analises semanais");
+    state.weeks.forEach((week, index) => {
+      const entries = entriesForWeek(week.id);
+      const stats = aggregateStats(entries, "week");
+      heading(`Semana ${index + 1} - ${formatDateShort(week.days[0].date)} a ${formatDateShort(week.days[6].date)}`, 12);
+      paragraph(`FEITAS ${stats.done}/${stats.target} - Percentual ${stats.percentLabel} - Justificadas ${stats.excused}.`);
+      table(["Atividade / categoria", "Feitas", "Streak", "Recorde", "%"], pdfRowsForPeriod(entries, "week"), [280, 62, 55, 58, 56]);
+    });
+
+    heading("Analises mensais");
+    availableMonthKeys().forEach(key => {
+      const entries = entriesForMonth(key);
+      const stats = aggregateStats(entries, "month");
+      heading(formatMonthKey(key), 12);
+      paragraph(`FEITAS ${stats.done}/${stats.target} - Percentual ${stats.percentLabel} - Justificadas ${stats.excused}.`);
+      table(["Atividade / categoria", "Feitas", "Streak", "Recorde", "%"], pdfRowsForPeriod(entries, "month"), [280, 62, 55, 58, 56]);
+    });
+
+    heading("Calendarios mensais");
+    availableMonthKeys().forEach(calendar);
+
+    heading("Graficos de todos os periodos");
+    allGraphConfigs().forEach(config => chart(graphDataFor(config)));
+
+    const objects = [];
+    const pageIds = [];
+    const contentIds = [];
+    let nextId = 5;
+    pages.forEach(() => { pageIds.push(nextId++); contentIds.push(nextId++); });
+    objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+    objects[2] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(" ")}] /Count ${pages.length} >>`;
+    objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
+    objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";
+    pages.forEach((commands, index) => {
+      const stream = commands.join("\n");
+      objects[pageIds[index]] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentIds[index]} 0 R >>`;
+      objects[contentIds[index]] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+    });
+    let pdf = "%PDF-1.4\n% CheckList offline\n";
+    const offsets = [0];
+    for (let i = 1; i < objects.length; i++) {
+      offsets[i] = pdf.length;
+      pdf += `${i} 0 obj\n${objects[i]}\nendobj\n`;
+    }
+    const xref = pdf.length;
+    pdf += `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+    for (let i = 1; i < objects.length; i++) pdf += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
+    pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    return new Blob([pdf], { type: "application/pdf" });
+  }
+
+  function downloadAnalysisPDF() {
+    try {
+      const blob = createPDFDocument();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `analise_checklist_completa_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      setStatus("PDF completo criado com gráficos de todas as semanas, meses, anos e décadas.");
+    } catch (error) {
+      console.error(error);
+      alert("Não foi possível gerar o PDF. Consulte o console do navegador.");
+    }
+  }
+
+  load();
+})();
+
+</script>
+</body>
+</html>
